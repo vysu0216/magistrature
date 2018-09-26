@@ -7,10 +7,12 @@ public class Packet {
 
     private long endTime;
     private final int PACKET_CLASS;
+    public final long PROCESSING_TIME;
     private static String NAME = "Base Packet";
 
-    public Packet(int packetClass) {
+    public Packet(int packetClass, long processing_time) {
         this.PACKET_CLASS = packetClass;
+        PROCESSING_TIME = processing_time;
     }
 
     public long getStartTime() {
@@ -25,8 +27,12 @@ public class Packet {
         return PACKET_CLASS;
     }
 
-    public void setEndTime() {
-        endTime = System.currentTimeMillis() - startTime;
+    public void setEndTime(long endTime) {
+        this.endTime = endTime;
+    }
+
+    public float getLifeTime() {
+        return (float)(endTime - startTime)/1000;
     }
 
     @Override

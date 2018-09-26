@@ -2,10 +2,10 @@ package com.sgu.magistr.imitationmodel.packets;
 
 public class FirstClassPacket extends Packet {
 
-    private static String NAME = "First Class Packet";
+    private static final String NAME = "First Class Packet";
 
     public FirstClassPacket() {
-        super(1);
+        super(1, 806);
     }
 
     @Override
