@@ -1,7 +1,5 @@
 package com.sgu.magistr.imitationmodel.refactored;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Random;
 
 public class Generator {
@@ -12,24 +10,20 @@ public class Generator {
 
     private double currTime = 0;
     private Random random = new Random();
-    private LinkedList<Packet> queue = new LinkedList<Packet>();
-
+    private Packet queuedPacket;
 
     private void emulate(){
         while (currTime < TIME_OF_MODELING){
             currTime += genExp(PACK_GEN_LAMBDA);
             Packet curPacket = new Packet(currTime,genExp(PACK_PROC_LAMBDA));
             curPacket.setReleaseTime(currTime + curPacket.getProcTime());
-            if (!queue.isEmpty()) {
-                if (curPacket.getGenTime() < queue.getFirst().getReleaseTime()) {
-                    currTime = queue.getFirst().getReleaseTime();
+            if (queuedPacket != null) {
+                if (curPacket.getGenTime() < queuedPacket.getReleaseTime()) {
+                    currTime = queuedPacket.getReleaseTime();
                     curPacket.setReleaseTime(curPacket.releaseTime + (currTime - curPacket.getGenTime()));
-                    queue.removeFirst();
-                } else {
-                    queue.removeFirst();
                 }
             }
-            queue.addLast(curPacket);
+            queuedPacket = curPacket;
             System.out.println("Generation time: " + curPacket.genTime + " Release time: " + curPacket.releaseTime);
         }
     }
