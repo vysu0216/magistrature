@@ -25,9 +25,9 @@ public class Emulator {
                 Packet packet = packets.takeFirst();
                 processPacket(packet);
                 System.out.println(packet.toString()
-                        + ":\n Packet generation time (millis): " + packet.getStartTime()
-                        + "\n Packet processed at (millis): " + packet.getEndTime()
-                        + "\n Packet serving time: " + packet.getLifeTime());
+                        + ":\n Requirement generation time (millis): " + packet.getStartTime()
+                        + "\n Requirement processed at (millis): " + packet.getEndTime()
+                        + "\n Requirement serving time: " + packet.getLifeTime());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

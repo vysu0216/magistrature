@@ -1,45 +1,47 @@
 package com.sgu.magistr.imitationmodel.refactored;
 
-import java.util.LinkedList;
-import java.util.Random;
+import java.util.*;
 
 public class Generator {
 
+    private Requirement newRequirement;
     public final double PACK_GEN_LAMBDA = 3;
     public final double PACK_PROC_LAMBDA = 5;
     private final int TIME_OF_MODELING = 100;
 
-    LinkedList<Packet> queue = new LinkedList();
+    List<Requirement> queue = Collections.synchronizedList(new ArrayList<Requirement>());
     private double currTime = 0;
     private Random random = new Random();
 
     private void emulate() {
-        currTime += genExp(PACK_GEN_LAMBDA);
-        queue.addLast(new Packet(currTime, genExp(PACK_PROC_LAMBDA)));
-        currTime += genExp(PACK_GEN_LAMBDA);
-        queue.addLast(new Packet(currTime, genExp(PACK_PROC_LAMBDA)));
 
+        //Requirement initRequirement = new Requirement(1, 2);
+        Requirement initRequirement = new Requirement(currTime + genExp(PACK_GEN_LAMBDA), genExp(PACK_PROC_LAMBDA));
+        queue.add(initRequirement);
         iterateByQueue(queue);
-
-        System.out.println(queue.getFirst() + "\n" + queue.getLast());
-
-/*        while (currTime < TIME_OF_MODELING) {
-
-        }*/
     }
 
+    private void iterateByQueue(List<Requirement> queue) {
+        boolean t = false;
+        for (int i = 0;;i++ ) {
 
-    private void iterateByQueue(LinkedList<Packet> queue) {
-        for (Packet packet : queue) {
-            if (packet.genTime < queue.getFirst().getReleaseTime())
-                if (packet == queue.getLast()) {
-                    queue.addLast(new Packet(packet.genTime + genExp(PACK_GEN_LAMBDA), genExp(PACK_PROC_LAMBDA)));
-                }
-            else {
-                    queue.removeFirst();
-                    iterateByQueue(queue);
-                }
+            if (i == queue.size() - 1) {
+                newRequirement = new Requirement(queue.get(i).genTime + genExp(PACK_GEN_LAMBDA), genExp(PACK_PROC_LAMBDA));
+                System.out.println(queue.get(i) + " queue count: " + (i));
+                t = true;
+                queue.add(newRequirement);
+            } else newRequirement = queue.get(i + 1);
+
+            if (newRequirement.genTime > queue.get(0).releaseTime) {
+                queue.remove(0);
+                i--;
+                iterateByQueue(queue);
+            }
+
+            if (newRequirement.releaseTime > TIME_OF_MODELING)
+                break;
         }
+
     }
 
     private double genExp(double lambda) {
@@ -51,12 +53,12 @@ public class Generator {
     }
 
 
-    class Packet {
+    class Requirement {
         private double genTime;
         private double releaseTime;
         private double procTime;
 
-        public Packet(double genTime, double procTime) {
+        public Requirement(double genTime, double procTime) {
             this.genTime = genTime;
             this.procTime = procTime;
         }

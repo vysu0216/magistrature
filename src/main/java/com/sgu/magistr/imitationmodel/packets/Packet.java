@@ -8,7 +8,7 @@ public class Packet {
     private long endTime;
     private final int PACKET_CLASS;
     public final long PROCESSING_TIME;
-    private static String NAME = "Base Packet";
+    private static String NAME = "Base Requirement";
 
     public Packet(int packetClass, long processing_time) {
         this.PACKET_CLASS = packetClass;
