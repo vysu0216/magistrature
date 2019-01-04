@@ -27,17 +27,6 @@ public class Generator {
         System.out.println(class2Req + " queue count: " + class2Queue.size());
 
         double currTime = Math.min(class1Req.genTime, class2Req.genTime);
-        /*class1Queue.add(class1Req);
-        class2Queue.add(class2Req);
-        class1Queue.add(new Requirement(currTime + genExp(CLASS_1_REQ_GEN_LAMBDA), 0, 0, 1));
-        class2Queue.add(new Requirement(currTime + genExp(CLASS_2_REQ_GEN_LAMBDA), 0, 0, 2));*/
-
-/*        for (int i = 0; i < class1Queue.size(); i++) {
-            System.out.println(class1Queue.get(i) + " queue count: " + class1Queue.size());
-        }
-        for (int i = 0; i < class2Queue.size(); i++) {
-            System.out.println(class2Queue.get(i) + " queue count: " + class2Queue.size());
-        }*/
 
         while (currTime < TIME_OF_MODELING) {
             double t1curr = 0.0;
@@ -102,25 +91,6 @@ public class Generator {
 
         }
     }
-
-/*    @Deprecated
-    private void iterateByQueue(List<Requirement> queue) {
-        int i = 0;
-        while (newRequirement.releaseTime < TIME_OF_MODELING) {
-
-
-            if (i == queue.size() - 1) {
-                newRequirement = new Requirement(queue.get(i).genTime + genExp(CLASS_1_REQ_GEN_LAMBDA), genExp(MP_CLASS_1_REQ_PROC_LAMBDA), 1000, 1);
-                System.out.println(queue.get(i) + " queue count: " + (i));
-                queue.add(newRequirement);
-            } else newRequirement = queue.get(i + 1);
-
-            if (newRequirement.genTime > queue.get(0).releaseTime) {
-                queue.remove(0);
-                i = 0;
-            } else i++;
-        }
-    }*/
 
     private double genExp(double lambda) {
         return -(Math.log(random.nextDouble()) / lambda);
