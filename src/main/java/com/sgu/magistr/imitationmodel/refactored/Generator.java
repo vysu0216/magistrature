@@ -4,11 +4,11 @@ import java.util.*;
 
 public class Generator {
 
-    public final double CLASS_1_REQ_GEN_LAMBDA = 3; //                  лямбда для генерации требования 1 класса
-    public final double CLASS_2_REQ_GEN_LAMBDA = 2; //                  лямбда для генерации требования 2 класса
-    public final double MP_CLASS_1_REQ_PROC_LAMBDA = 4; //              лямбда для генерации времени обработки требования 1 класса в МП
-    public final double MP_CLASS_2_REQ_PROC_LAMBDA = 5; //              лямбда для генерации времени обработки требования 2 класса в ПП
-    public final double PP_REQ_PROC_LAMBDA = 3;//                       лямбда для генерации времени обработки требований в ПП
+    public final double CLASS_1_REQ_GEN_LAMBDA = 3; //                   лямбда для генерации требования 1 класса
+    public final double CLASS_2_REQ_GEN_LAMBDA = 2; //                   лямбда для генерации требования 2 класса
+    public final double MP_CLASS_1_REQ_PROC_LAMBDA = 8; //              лямбда для генерации времени обработки требования 1 класса в МП
+    public final double MP_CLASS_2_REQ_PROC_LAMBDA = 9; //              лямбда для генерации времени обработки требования 2 класса в ПП
+    public final double PP_REQ_PROC_LAMBDA = 10;//                       лямбда для генерации времени обработки требований в ПП
     private final double TIME_OF_MODELING = 10.0;
 
     List<Requirement> class1Queue = Collections.synchronizedList(new ArrayList<Requirement>());
@@ -75,7 +75,6 @@ public class Generator {
                     } else {
                         curClass1Req.releaseTime = curClass1Req.procStartTime + genExp(MP_CLASS_1_REQ_PROC_LAMBDA);
                     }
-                    System.out.println(class1Queue.get(1) + " queue 1 count: " + class1Queue.size());
                     class1Queue.get(0).procStartTime = currTime;
                     class1Queue.get(0).reqClass = 3;
                     class2Queue = changeQueue(class1Queue.get(0), class2Queue);
@@ -83,8 +82,9 @@ public class Generator {
                         class2Queue.get(0).releaseTime = currTime + genExp(PP_REQ_PROC_LAMBDA);
                     }
                     class1Queue.remove(class1Queue.get(0));
+                    System.out.println(curClass1Req + " queue 1 count: " + class1Queue.size());
                 } else {
-                    curClass1Req = class1Queue.get(class1Queue.size()-1);
+                    curClass1Req = class1Queue.get(class1Queue.size() - 1);
                     if (curClass1Req.reqClass == 1) {
                         Requirement newClass1Req = new Requirement(currTime + genExp(CLASS_1_REQ_GEN_LAMBDA), 0, 0, 1);
                         class1Queue.add(newClass1Req);
@@ -101,7 +101,6 @@ public class Generator {
                     } else {
                         curClass2Req.releaseTime = curClass2Req.procStartTime + genExp(PP_REQ_PROC_LAMBDA);
                     }
-                    System.out.println(curClass2Req + " queue 2 count: " + class2Queue.size());
 
                     if (class2Queue.get(0).reqClass == 2) {
                         class2Queue.get(0).procStartTime = currTime;
@@ -110,10 +109,11 @@ public class Generator {
                             class1Queue.get(0).releaseTime = currTime + genExp(MP_CLASS_2_REQ_PROC_LAMBDA);
                         }
                     }
-
                     class2Queue.remove(class2Queue.get(0));
+                    System.out.println(curClass2Req + " queue 2 count: " + class2Queue.size());
+
                 } else {
-                    curClass2Req = class2Queue.get(class2Queue.size()-1);
+                    curClass2Req = class2Queue.get(class2Queue.size() - 1);
                     if (curClass2Req.reqClass == 2) {
                         Requirement newClass2Req = new Requirement(currTime + genExp(CLASS_2_REQ_GEN_LAMBDA), 0, 0, 2);
                         class2Queue.add(newClass2Req);
