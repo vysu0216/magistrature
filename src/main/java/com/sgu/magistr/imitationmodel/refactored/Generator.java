@@ -4,12 +4,12 @@ import java.util.*;
 
 public class Generator {
 
-    private static final double CLASS_1_REQ_GEN_LAMBDA = 0.01; //                                           интенсивность поступления требований 1 класса в МП
-    private static final double CLASS_2_REQ_GEN_LAMBDA = 15.0; //                                           интенсивность поступления требований 2 класса в МП
-    private static final double MP_CLASS_1_REQ_PROC_LAMBDA = 200000; //                                     интенсивность обработки требований 1 класса в МП
-    private static final double MP_CLASS_2_REQ_PROC_LAMBDA = 400000; //                                     интенсивность обработки требований 2 класса в ПП
-    private static final double PP_REQ_PROC_LAMBDA = 25000;//                                               интенсивность обработки требований ПП
-    private static final double TIME_OF_MODELING = 10000.0;
+    private static final double CLASS_1_REQ_GEN_LAMBDA = 1;//0.01; //                                           интенсивность поступления требований 1 класса в МП
+    private static final double CLASS_2_REQ_GEN_LAMBDA = 1;//15.0; //                                           интенсивность поступления требований 2 класса в МП
+    private static final double MP_CLASS_1_REQ_PROC_LAMBDA = 3;//200000; //                                     интенсивность обработки требований 1 класса в МП
+    private static final double MP_CLASS_2_REQ_PROC_LAMBDA = 3;//400000; //                                     интенсивность обработки требований 2 класса в ПП
+    private static final double PP_REQ_PROC_LAMBDA = 4;//25000;//                                               интенсивность обработки требований ПП
+    private static final double TIME_OF_MODELING = 1000000;//10000.0;
 
     private List<Requirement> class1Queue = Collections.synchronizedList(new ArrayList<Requirement>()); //  очередь требований 1 класса
     private List<Requirement> class2Queue = Collections.synchronizedList(new ArrayList<Requirement>()); //  очередь требований 2 класса
@@ -27,6 +27,10 @@ public class Generator {
         Requirement nextReq = null;
         EventsList.add(new Event(currTime, EventTypesEnum.SEND_TO_MP_CLASS_1));
         EventsList.add(new Event(currTime, EventTypesEnum.SEND_TO_PP_CLASS_2));
+
+        double timeAcc = 0.0;
+        int N = 1;
+        double mwAnalyze = 0.0;
 
         while (currTime < TIME_OF_MODELING) {
             Event currEvent = getMinTimeEvent(EventsList);
@@ -55,6 +59,7 @@ public class Generator {
                     break;
 
                 case SEND_TO_PP_CLASS_3:
+                    //  curReq = new Requirement(currEvent.getGenTime(), 3);
                     curReq = new Requirement(currTime, 3);
                     class2Queue.add(curReq);
                     if (!isBusyPP) {
@@ -76,7 +81,9 @@ public class Generator {
 
                 case FINISH_SERVE_IN_MP:
                     curReq = class1Queue.get(0);
-                    EventsList.add(new Event(currTime, EventTypesEnum.SEND_TO_PP_CLASS_3));
+                    /*timeAcc += currTime - curReq.getGenerationTime();
+                    N++;*/
+                    EventsList.add(new Event(currTime, curReq.getGenerationTime(), EventTypesEnum.SEND_TO_PP_CLASS_3));
                     class1Queue.remove(curReq);
                     if (!class1Queue.isEmpty()) {
                         nextReq = class1Queue.get(0);
@@ -91,13 +98,15 @@ public class Generator {
                     break;
 
                 case FINISH_SERVE_IN_PP:
+                    N++;
                     curReq = class2Queue.get(0);
-                    EventsList.add(new Event(currTime, EventTypesEnum.SEND_TO_MP_CLASS_2));
+                    timeAcc += currTime - curReq.getGenerationTime();
+                    EventsList.add(new Event(currTime, curReq.getGenerationTime(), EventTypesEnum.SEND_TO_MP_CLASS_2));
                     class2Queue.remove(curReq);
                     if (!class2Queue.isEmpty()) {
                         nextReq = class2Queue.get(0);
                         nextReq.setProcStartTime(currTime);
-                        if(nextReq.getReqClass() == 2)
+                        if (nextReq.getReqClass() == 2)
                             EventsList.add(new Event(currTime + genExp(PP_REQ_PROC_LAMBDA), EventTypesEnum.FINISH_SERVE_IN_PP));
                         else
                             EventsList.add(new Event(currTime + genExp(PP_REQ_PROC_LAMBDA), EventTypesEnum.FINISH_SERVE_CLASS_3));
@@ -107,17 +116,28 @@ public class Generator {
                     break;
 
                 case FINISH_SERVE_CLASS_3:
+                    N++;
                     curReq = class2Queue.get(0);
+                    timeAcc += currTime - curReq.getGenerationTime();
                     curReq.setReleaseTime(currTime);
                     class2Queue.remove(curReq);
-                    isBusyPP = false;
+                    if (!class2Queue.isEmpty()) {
+                        nextReq = class2Queue.get(0);
+                        nextReq.setProcStartTime(currTime);
+                        if (nextReq.getReqClass() == 2)
+                            EventsList.add(new Event(currTime + genExp(PP_REQ_PROC_LAMBDA), EventTypesEnum.FINISH_SERVE_IN_PP));
+                        else
+                            EventsList.add(new Event(currTime + genExp(PP_REQ_PROC_LAMBDA), EventTypesEnum.FINISH_SERVE_CLASS_3));
+                        isBusyPP = true;
+                    } else
+                        isBusyPP = false;
+                    //System.out.println("Time accumulator = " + timeAcc + " N = " + N + " " + curReq);
                     break;
             }
-
             EventsList.remove(currEvent);
-
         }
-
+        mwAnalyze = timeAcc / N;
+        System.out.println(mwAnalyze);
     }
 
     private Event getMinTimeEvent(Set<Event> eventsList) {
