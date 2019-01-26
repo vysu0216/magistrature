@@ -5,15 +5,15 @@ import java.util.*;
 public class Generator {
 
     private static final double CLASS_1_REQ_GEN_LAMBDA = //1; //                               интенсивность поступления требований 1 класса в МП
-    0.01;
+            0.01;
     private static final double CLASS_2_REQ_GEN_LAMBDA = //1; //                               интенсивность поступления требований 2 класса в МП
-    15.0;
+            15.0;
     private static final double MP_CLASS_1_REQ_PROC_LAMBDA = //3; //                           интенсивность обработки требований 1 класса в МП
-    200000;
+            200000;
     private static final double MP_CLASS_2_REQ_PROC_LAMBDA = //3; //                            интенсивность обработки требований 2 класса в ПП
-    400000;
+            400000;
     private static final double PP_REQ_PROC_LAMBDA = //4;//                                     интенсивность обработки требований ПП
-    25000;
+            25000;
     private static final double TIME_OF_MODELING = 100000.0;
 
     private List<Requirement> class1Queue = Collections.synchronizedList(new ArrayList<Requirement>()); //  очередь требований 1 класса
@@ -37,8 +37,8 @@ public class Generator {
         double TPP = 0.0; //        Сумма времени пребывания всех требований в приемопередатчике
         int NMP = 1; //             Сумма требований поступающих в микропроцессор
         int NPP = 1; //             Сумма требований поступающих в приемопередатчик
-        double MMP = 0.0; //        Оценка матожидания времени пребывания требований в микропроцессоре
-        double MPP = 0.0; //        Оценка матожидания времени пребывания требований в приемопередатчике
+        double MMP; //        Оценка матожидания времени пребывания требований в микропроцессоре
+        double MPP; //        Оценка матожидания времени пребывания требований в приемопередатчике
 
         while (currTime < TIME_OF_MODELING) {
             Event currEvent = getMinTimeEvent(EventsList);
@@ -67,8 +67,8 @@ public class Generator {
                     break;
 
                 case SEND_TO_PP_CLASS_3:
-                    //  curReq = new Requirement(currEvent.getGenTime(), 3);
-                    curReq = new Requirement(currTime, 3);
+                    //  curReq = new Requirement(currEvent.getGenTime(), 3); //      раскомментировать для подсчета общего времени пребывания требования в узле
+                    curReq = new Requirement(currTime, 3); //               закомментировать для подсчета общего времени пребывания требования в узле
                     class2Queue.add(curReq);
                     if (!isBusyPP) {
                         curReq.setProcStartTime(currTime);
@@ -145,8 +145,8 @@ public class Generator {
         }
         MMP = TMP / NMP;
         MPP = TPP / NPP;
-        System.out.println("Оценка матожидания пребывания требований в приемопередатчике = " + MMP + "\n" +
-                "Оценка матожидания пребывания требований в приемопередатчике = " + MPP);
+        System.out.println("Матожидания пребывания требований в приемопередатчике = " + MMP + "\n" +
+                "Матожидания пребывания требований в приемопередатчике = " + MPP);
     }
 
     private Event getMinTimeEvent(Set<Event> eventsList) {
