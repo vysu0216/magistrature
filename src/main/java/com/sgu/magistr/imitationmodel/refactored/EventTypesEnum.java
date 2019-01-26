@@ -1,7 +1,11 @@
 package com.sgu.magistr.imitationmodel.refactored;
 
 public enum EventTypesEnum {
-
-    SEND_TO_MP_CLASS_1, SEND_TO_PP_CLASS_2, SEND_TO_PP_CLASS_3, FINISH_SERVE_IN_MP, FINISH_SERVE_IN_PP, FINISH_SERVE_CLASS_3, SEND_TO_MP_CLASS_2;
-
+    SEND_TO_MP_CLASS_1,     //      Поступление требования 1 класса в очередь микропроцессора
+    SEND_TO_PP_CLASS_2,     //      Поступление требования 2 класса в очередь приемопередатчика
+    SEND_TO_MP_CLASS_2,     //      Поступление требования 2 класса в очередь микропроцессора
+    SEND_TO_PP_CLASS_3,     //      Поступление требования 3 класса в очередь микропроцессора
+    FINISH_SERVE_IN_MP,     //      Завершение обслуживания требований класса 2 в микропроцессоре
+    FINISH_SERVE_IN_PP,     //      Завершение обслуживания в приемопередатчике
+    FINISH_SERVE_CLASS_3;   //      Завершение обслуживания класса 3
 }
