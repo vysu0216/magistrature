@@ -1,4 +1,4 @@
-package com.sgu.magistr.imitationmodel.refactored;
+package com.sgu.magistr.imitationmodel;
 
 public class Requirement {
     private double procStartTime;   //                фактическое время начала обслуживания

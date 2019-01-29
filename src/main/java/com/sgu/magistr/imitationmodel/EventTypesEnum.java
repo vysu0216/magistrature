@@ -1,4 +1,4 @@
-package com.sgu.magistr.imitationmodel.refactored;
+package com.sgu.magistr.imitationmodel;
 
 public enum EventTypesEnum {
     SEND_TO_MP_CLASS_1,     //      Поступление требования 1 класса в очередь микропроцессора
