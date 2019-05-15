@@ -1,15 +1,18 @@
 package com.sgu.magistr.imitationmodel;
 
+import java.text.DecimalFormat;
 import java.util.*;
 
 public class Generator {
 
-    private static final double CLASS_1_REQ_GEN_LAMBDA = 0.01;//    интенсивность поступления требований 1 класса в МП
-    private static final double CLASS_2_REQ_GEN_LAMBDA = 15.0;//    интенсивность поступления требований 2 класса в МП
-    private static final double MP_CLASS_1_REQ_PROC_MU = 200000;//  интенсивность обработки требований 1 класса в МП
-    private static final double MP_CLASS_2_REQ_PROC_MU = 400000;//  интенсивность обработки требований 2 класса в ПП
-    private static final double PP_REQ_PROC_MU = 25000;//           интенсивность обработки требований ПП
-    private static final double TIME_OF_MODELING = 1000000.0;
+    private static final double CLASS_1_REQ_GEN_LAMBDA = 5.0;//    интенсивность поступления требований 1 класса в МП
+    private static final double CLASS_2_REQ_GEN_LAMBDA =
+            CLASS_1_REQ_GEN_LAMBDA * 1000.0;
+    //15.0;//    интенсивность поступления требований 2 класса в МП
+    private static final double MP_CLASS_1_REQ_PROC_MU = 1.0/200000;//  интенсивность обработки требований 1 класса в МП
+    private static final double MP_CLASS_2_REQ_PROC_MU = 1.0/400000;//  интенсивность обработки требований 2 класса в ПП
+    private static final double PP_REQ_PROC_MU = 1.0/25000;//           интенсивность обработки требований ПП
+    private static final double TIME_OF_MODELING = 100000.0;
 
     private List<Requirement> class1Queue = Collections.synchronizedList(new ArrayList<Requirement>()); // очередь требований 1 класса
     private List<Requirement> class2Queue = Collections.synchronizedList(new ArrayList<Requirement>()); // очередь требований 2 класса
@@ -33,12 +36,18 @@ public class Generator {
         EventsList.add(new Event(currTime, EventTypesEnum.SEND_TO_MP_CLASS_1));
         EventsList.add(new Event(currTime, EventTypesEnum.SEND_TO_PP_CLASS_2));
 
-        double TMP = 0.0; //  Сумма длительностей пребывания всех требований в МП
-        double TPP = 0.0; //  Сумма длительностей пребывания всех требований в ПП
-        int NMP = 1; //       Сумма требований поступающих в микропроцессор
-        int NPP = 1; //       Сумма требований поступающих в приемопередатчик
-        double MMP; //        Матожидание времени пребывания требований в микропроцессоре
-        double MPP; //        Матожидание времени пребывания требований в приемопередатчике
+        double TMP_1 = 0.0; //  Сумма длительностей пребывания требований 1 класса в МП
+        double TMP_2 = 0.0; //  Сумма длительностей пребывания требований 2 класса в МП
+        double TPP_2 = 0.0; //  Сумма длительностей пребывания всех требований в ПП
+        double TPP_3 = 0.0; //  Сумма длительностей пребывания всех требований в ПП
+        int NMP_1 = 1; //       Сумма требований 1 класса поступающих в микропроцессор
+        int NMP_2 = 1; //       Сумма требований 2 класса поступающих в микропроцессор
+        int NPP_2 = 1; //       Сумма требований 2 класса поступающих в приемопередатчик
+        int NPP_3 = 1; //       Сумма требований 3 класса поступающих в приемопередатчик
+        double MMP_1; //        Матожидание времени пребывания требований 1 класса в микропроцессоре
+        double MMP_2; //        Матожидание времени пребывания требований 2 класса в микропроцессоре
+        double MPP_2; //        Матожидание времени пребывания требований 2 класса в приемопередатчике
+        double MPP_3; //        Матожидание времени пребывания требований 3 класса в приемопередатчике
 
         while (currTime < TIME_OF_MODELING) {
             Event currEvent = getMinTimeEvent(EventsList);
@@ -53,7 +62,7 @@ public class Generator {
                     EventsList.add(new Event(currTime + genExp(CLASS_1_REQ_GEN_LAMBDA), EventTypesEnum.SEND_TO_MP_CLASS_1));
                     if (!isBusyMP) {
                         curReq.setProcStartTime(currTime);
-                        EventsList.add(new Event(currTime + genExp(MP_CLASS_1_REQ_PROC_MU), EventTypesEnum.FINISH_SERVE_IN_MP));
+                        EventsList.add(new Event(currTime + MP_CLASS_1_REQ_PROC_MU/*genExp(MP_CLASS_1_REQ_PROC_MU)*/, EventTypesEnum.FINISH_SERVE_IN_MP));
                         isBusyMP = true;
                     }
                     break;
@@ -65,7 +74,7 @@ public class Generator {
                     EventsList.add(new Event(currTime + genExp(CLASS_2_REQ_GEN_LAMBDA), EventTypesEnum.SEND_TO_PP_CLASS_2));
                     if (!isBusyPP) {
                         curReq.setProcStartTime(currTime);
-                        EventsList.add(new Event(currTime + genExp(PP_REQ_PROC_MU), EventTypesEnum.FINISH_SERVE_IN_PP));
+                        EventsList.add(new Event(currTime + PP_REQ_PROC_MU/*genExp(PP_REQ_PROC_MU)*/, EventTypesEnum.FINISH_SERVE_IN_PP));
                         isBusyPP = true;
                     }
                     break;
@@ -77,7 +86,7 @@ public class Generator {
                     class2Queue.add(curReq);
                     if (!isBusyPP) {
                         curReq.setProcStartTime(currTime);
-                        EventsList.add(new Event(currTime + genExp(PP_REQ_PROC_MU), EventTypesEnum.FINISH_SERVE_CLASS_3));
+                        EventsList.add(new Event(currTime + PP_REQ_PROC_MU/* genExp(PP_REQ_PROC_MU)*/, EventTypesEnum.FINISH_SERVE_CLASS_3));
                         isBusyPP = true;
                     }
                     break;
@@ -89,15 +98,20 @@ public class Generator {
                     MPprevTime = currTime;
                     if (!isBusyMP) {
                         curReq.setProcStartTime(currTime);
-                        EventsList.add(new Event(currTime + genExp(MP_CLASS_2_REQ_PROC_MU), EventTypesEnum.FINISH_SERVE_IN_MP));
+                        EventsList.add(new Event(currTime + MP_CLASS_2_REQ_PROC_MU/*genExp(MP_CLASS_2_REQ_PROC_MU)*/, EventTypesEnum.FINISH_SERVE_IN_MP));
                         isBusyMP = true;
                     }
                     break;
 
                 case FINISH_SERVE_IN_MP:
                     curReq = class1Queue.get(0);
-                    TMP += currTime - curReq.getGenerationTime();
-                    NMP++;
+                    if (curReq.getReqClass() == 1) {
+                        TMP_1 += currTime - curReq.getGenerationTime();
+                        NMP_1++;
+                    } else if (curReq.getReqClass() == 2) {
+                        TMP_2 += currTime - curReq.getGenerationTime();
+                        NMP_2++;
+                    }
                     EventsList.add(new Event(currTime, curReq.getGenerationTime(), EventTypesEnum.SEND_TO_PP_CLASS_3));
                     mTimeAccumulator("MP", class1Queue.size(), currTime - MPprevTime);
                     MPprevTime = currTime;
@@ -106,9 +120,9 @@ public class Generator {
                         nextReq = class1Queue.get(0);
                         nextReq.setProcStartTime(currTime);
                         if (nextReq.getReqClass() == 1)
-                            EventsList.add(new Event(currTime + genExp(MP_CLASS_1_REQ_PROC_MU), EventTypesEnum.FINISH_SERVE_IN_MP));
+                            EventsList.add(new Event(currTime + MP_CLASS_1_REQ_PROC_MU/*genExp(MP_CLASS_1_REQ_PROC_MU)*/, EventTypesEnum.FINISH_SERVE_IN_MP));
                         else
-                            EventsList.add(new Event(currTime + genExp(MP_CLASS_2_REQ_PROC_MU), EventTypesEnum.FINISH_SERVE_IN_MP));
+                            EventsList.add(new Event(currTime + MP_CLASS_2_REQ_PROC_MU/*genExp(MP_CLASS_2_REQ_PROC_MU)*/, EventTypesEnum.FINISH_SERVE_IN_MP));
                         isBusyMP = true;
                     } else
                         isBusyMP = false;
@@ -116,52 +130,56 @@ public class Generator {
 
                 case FINISH_SERVE_IN_PP:
                     curReq = class2Queue.get(0);
-                    NPP++;
-                    TPP += currTime - curReq.getGenerationTime();
+                    NPP_2++;
+                    TPP_2 += currTime - curReq.getGenerationTime();
                     EventsList.add(new Event(currTime, curReq.getGenerationTime(), EventTypesEnum.SEND_TO_MP_CLASS_2));
                     mTimeAccumulator("PP", class2Queue.size(), currTime - PPprevTime);
                     PPprevTime = currTime;
                     class2Queue.remove(curReq);
-                    if (!class2Queue.isEmpty()) {
-                        nextReq = class2Queue.get(0);
-                        nextReq.setProcStartTime(currTime);
-                        if (nextReq.getReqClass() == 2)
-                            EventsList.add(new Event(currTime + genExp(PP_REQ_PROC_MU), EventTypesEnum.FINISH_SERVE_IN_PP));
-                        else
-                            EventsList.add(new Event(currTime + genExp(PP_REQ_PROC_MU), EventTypesEnum.FINISH_SERVE_CLASS_3));
-                        isBusyPP = true;
-                    } else
-                        isBusyPP = false;
+                    evalMath();
                     break;
 
                 case FINISH_SERVE_CLASS_3:
-                    NPP++;
+                    NPP_3++;
                     curReq = class2Queue.get(0);
-                    TPP += currTime - curReq.getGenerationTime();
+                    TPP_3 += currTime - curReq.getGenerationTime();
                     curReq.setReleaseTime(currTime);
                     mTimeAccumulator("PP", class2Queue.size(), currTime - PPprevTime);
                     PPprevTime = currTime;
                     class2Queue.remove(curReq);
-                    if (!class2Queue.isEmpty()) {
-                        nextReq = class2Queue.get(0);
-                        nextReq.setProcStartTime(currTime);
-                        if (nextReq.getReqClass() == 2)
-                            EventsList.add(new Event(currTime + genExp(PP_REQ_PROC_MU), EventTypesEnum.FINISH_SERVE_IN_PP));
-                        else
-                            EventsList.add(new Event(currTime + genExp(PP_REQ_PROC_MU), EventTypesEnum.FINISH_SERVE_CLASS_3));
-                        isBusyPP = true;
-                    } else
-                        isBusyPP = false;
+                    evalMath();
                     break;
             }
             EventsList.remove(currEvent);
         }
-        MMP = TMP / NMP;
-        MPP = TPP / NPP;
-        System.out.println("Матожидание пребывания требований в микропроцессоре = " + MMP + "\n" +
-                "Матожидание пребывания требований в приемопередатчике = " + MPP);
-        calculateMCount(mpKMap);
-        calculateMCount(ppKMap);
+        MMP_1 = TMP_1 / NMP_1;
+        MMP_2 = TMP_2 / NMP_2;
+        MPP_2 = TPP_2 / NPP_2;
+        MPP_3 = TPP_3 / NPP_3;
+        double mpCnt = calculateMCount(mpKMap);
+        double ppCnt = calculateMCount(ppKMap);
+        System.out.println("Интенсивность поступления требований " + CLASS_1_REQ_GEN_LAMBDA +
+                "\nМатематическое ожидание длительности пребывания требований 1 класса в микропроцессоре = " + MMP_1 + "\n" +
+                "Математическое ожидание длительности пребывания требований 2 класса в микропроцессоре = " + MMP_2 + "\n" +
+                "Математическое ожидание длительности пребывания требований 2 класса в приемопередатчике = " + MPP_2 + "\n" +
+                "Математическое ожидание длительности пребывания требований 3 класса в приемопередатчике = " + MPP_3 + "\n" +
+                        "Математическое ожидание числа требований в сети = " + (mpCnt + ppCnt) + "\n" +
+                "Математическое ожидание числа требований в микропроцессоре = " + mpCnt + "\n" +
+                "Математическое ожидание числа требований в приемопередатчике = " + ppCnt);
+    }
+
+    private void evalMath() {
+        Requirement nextReq;
+        if (!class2Queue.isEmpty()) {
+            nextReq = class2Queue.get(0);
+            nextReq.setProcStartTime(currTime);
+            if (nextReq.getReqClass() == 2)
+                EventsList.add(new Event(currTime + PP_REQ_PROC_MU/*genExp(PP_REQ_PROC_MU)*/, EventTypesEnum.FINISH_SERVE_IN_PP));
+            else
+                EventsList.add(new Event(currTime + PP_REQ_PROC_MU/*genExp(PP_REQ_PROC_MU)*/, EventTypesEnum.FINISH_SERVE_CLASS_3));
+            isBusyPP = true;
+        } else
+            isBusyPP = false;
     }
 
     /**
@@ -170,7 +188,7 @@ public class Generator {
      * @param eventsList - текущий набор событий для выбора
      *                   события с минимальным моментом наступления
      */
-    private Event getMinTimeEvent(@org.jetbrains.annotations.NotNull Set<Event> eventsList) {
+    private Event getMinTimeEvent(Set<Event> eventsList) {
         Event minTimeEvent = null;
         double mintime = TIME_OF_MODELING * 2;
         double eTime;
@@ -219,7 +237,6 @@ public class Generator {
         for (Integer k : kMap.keySet()) {
             mCount += ((k * kMap.get(k)) / TIME_OF_MODELING);
         }
-        System.out.println(mCount);
         return mCount;
     }
 
