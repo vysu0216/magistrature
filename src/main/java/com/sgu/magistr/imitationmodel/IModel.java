@@ -64,7 +64,7 @@ public class IModel {
             switch (currEvent.getEventType()) {
                 case SEND_TO_MP_CLASS_1:
                     curReq = new Requirement(currTime, 1);
-                    mTimeAccumulator("MP", class1Queue.size(), currTime - MPprevTime);
+                    mTimeAccumulator("MP_1", getQueueCount(class1Queue, 1), currTime - MPprevTime);
                     MPprevTime = currTime;
                     class1Queue.add(curReq);
                     EventsList.add(new Event(currTime + genExp(L01), EventTypesEnum.SEND_TO_MP_CLASS_1));
@@ -76,7 +76,7 @@ public class IModel {
                     break;
                 case SEND_TO_PP_CLASS_2:
                     curReq = new Requirement(currTime, 2);
-                    mTimeAccumulator("PP", class2Queue.size(), currTime - PPprevTime);
+                    mTimeAccumulator("PP_2", getQueueCount(class2Queue, 2), currTime - PPprevTime);
                     PPprevTime = currTime;
                     class2Queue.add(curReq);
                     EventsList.add(new Event(currTime + genExp(L02), EventTypesEnum.SEND_TO_PP_CLASS_2));
@@ -89,7 +89,7 @@ public class IModel {
 
                 case SEND_TO_PP_CLASS_3:
                     curReq = new Requirement(currTime, 3);
-                    mTimeAccumulator("PP", class2Queue.size(), currTime - PPprevTime);
+                    mTimeAccumulator("PP_3", getQueueCount(class2Queue, 3), currTime - PPprevTime);
                     PPprevTime = currTime;
                     class2Queue.add(curReq);
                     if (!isBusyPP) {
@@ -101,7 +101,7 @@ public class IModel {
 
                 case SEND_TO_MP_CLASS_2:
                     curReq = new Requirement(currTime, 2);
-                    mTimeAccumulator("MP", class1Queue.size(), currTime - MPprevTime);
+                    mTimeAccumulator("MP_2", getQueueCount(class1Queue, 2), currTime - MPprevTime);
                     class1Queue.add(curReq);
                     MPprevTime = currTime;
                     if (!isBusyMP) {
@@ -116,12 +116,13 @@ public class IModel {
                     if (curReq.getReqClass() == 1) {
                         TMP_1 += currTime - curReq.getGenerationTime();
                         NMP_1++;
+                        mTimeAccumulator("MP_1", getQueueCount(class1Queue, 1), currTime - MPprevTime);
                     } else if (curReq.getReqClass() == 2) {
                         TMP_2 += currTime - curReq.getGenerationTime();
                         NMP_2++;
+                        mTimeAccumulator("MP_2", getQueueCount(class1Queue, 2), currTime - MPprevTime);
                     }
                     EventsList.add(new Event(currTime, curReq.getGenerationTime(), EventTypesEnum.SEND_TO_PP_CLASS_3));
-                    mTimeAccumulator("MP", class1Queue.size(), currTime - MPprevTime);
                     MPprevTime = currTime;
                     class1Queue.remove(curReq);
                     if (!class1Queue.isEmpty()) {
@@ -141,7 +142,7 @@ public class IModel {
                     NPP_2++;
                     TPP_2 += currTime - curReq.getGenerationTime();
                     EventsList.add(new Event(currTime, curReq.getGenerationTime(), EventTypesEnum.SEND_TO_MP_CLASS_2));
-                    mTimeAccumulator("PP", class2Queue.size(), currTime - PPprevTime);
+                    mTimeAccumulator("PP_2", getQueueCount(class2Queue, 2), currTime - PPprevTime);
                     PPprevTime = currTime;
                     class2Queue.remove(curReq);
                     evalMath();
@@ -152,7 +153,7 @@ public class IModel {
                     curReq = class2Queue.get(0);
                     TPP_3 += currTime - curReq.getGenerationTime();
                     curReq.setReleaseTime(currTime);
-                    mTimeAccumulator("PP", class2Queue.size(), currTime - PPprevTime);
+                    mTimeAccumulator("PP_3", getQueueCount(class1Queue, 3), currTime - PPprevTime);
                     PPprevTime = currTime;
                     class2Queue.remove(curReq);
                     evalMath();
@@ -166,15 +167,20 @@ public class IModel {
         MPP_3 = TPP_3 / NPP_3;
         double mpCnt = calculateMCount(mpKMap);
         double ppCnt = calculateMCount(ppKMap);
-        /*System.out.println("Интенсивность поступления требований " + L01 +
-                "\nМатематическое ожидание длительности пребывания требований 1 класса в микропроцессоре = " + MMP_1 + "\n" +
-                "Математическое ожидание длительности пребывания требований 2 класса в микропроцессоре = " + MMP_2 + "\n" +
-                "Математическое ожидание длительности пребывания требований 2 класса в приемопередатчике = " + MPP_2 + "\n" +
-                "Математическое ожидание длительности пребывания требований 3 класса в приемопередатчике = " + MPP_3 + "\n" +
-                "Математическое ожидание числа требований в сети = " + (mpCnt + ppCnt) + "\n" +
-                "Математическое ожидание числа требований в микропроцессоре = " + mpCnt + "\n" +
-                "Математическое ожидание числа требований в приемопередатчике = " + ppCnt);*/
-        writer.write("Интенсивность поступления требований " + L01 +
+       /* МО числа требований 1 класса в S1: 5.0001252531375915E-8
+        МО числа требований 2 класса в S1: 2.5000626265687957E-5
+        МО числа требований 2 класса в S2: 4.003204164613357E-4
+        МО числа требований 3 класса в S2: 4.007207368777969E-4
+        МО числа требований в сети: 8.261417821098833E-4
+        Время реакции сети: 8.253164656442391E-5
+        Вероятность, что узел пуст: 0.9991745700500201
+        Время реакции сети: 8.253164656442391E-5
+        МО числа потерянных пакетов: 1.0E-5
+        МО длительности пребывания требований 1 класса в S1: 5.000125253137592E-6
+        МО длительности пребывания требований 2 класса в S1: 2.500062626568796E-6
+        МО длительности пребывания требований 2 класса в S2: 3.9992049596537034E-5
+        МО длительности пребывания требований 3 класса в S2: 4.007207368777969E-5*/
+        writer.write("L01: " + L01 +
                 "\nМатематическое ожидание длительности пребывания требований 1 класса в микропроцессоре = " + MMP_1 + "\n" +
                 "Математическое ожидание длительности пребывания требований 2 класса в микропроцессоре = " + MMP_2 + "\n" +
                 "Математическое ожидание длительности пребывания требований 2 класса в приемопередатчике = " + MPP_2 + "\n" +
@@ -182,6 +188,15 @@ public class IModel {
                 "Математическое ожидание числа требований в сети = " + (mpCnt + ppCnt) + "\n" +
                 "Математическое ожидание числа требований в микропроцессоре = " + mpCnt + "\n" +
                 "Математическое ожидание числа требований в приемопередатчике = " + ppCnt + "\n\n");
+    }
+
+    private int getQueueCount(List<Requirement> queue, int classNum){
+        int counter = 0;
+        for (Requirement req : queue) {
+            if(req.getReqClass() == classNum)
+                counter++;
+        }
+        return counter;
     }
 
     private void evalMath() {
@@ -226,7 +241,6 @@ public class IModel {
      * @param interval   - интервал для суммирования с предыдущими
      */
     private void mTimeAccumulator(String systemType, int queSize, double interval) {
-        double tmpInterval = 0;
         if (systemType.equals("MP")) {
             if (!mpKMap.containsKey(queSize)) {
                 mpKMap.put(queSize, interval);

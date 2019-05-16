@@ -20,7 +20,7 @@ public class InitExperiment {
             new AModel(l1, writer);
         }
 
-        //writer.write("Данные имитационной модели: \n");
+        writer.write("Данные имитационной модели: \n");
         for (double l1 : l1Array) {
             new IModel(l1, writer);
         }

@@ -63,7 +63,7 @@ public class AModel {
             q11 = q11 + n * p1[n - 1];
         }
 
-        writer.write("L01 = " + L01);
+        writer.write("L01: " + L01);
         writer.write("\nМО числа требований 1 класса в S1: " + q11);
         s += q11;
         for (int n = 0; n < Q_CNT; n++) {
