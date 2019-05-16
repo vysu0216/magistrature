@@ -175,12 +175,7 @@ public class IModel {
         double mp2Cnt = calculateMCount(mp2KMap);
         double pp2Cnt = calculateMCount(pp2KMap);
         double pp3Cnt = calculateMCount(pp3KMap);
-       /*
-        Время реакции сети: 8.253164656442391E-5
-        Вероятность, что узел пуст: 0.9991745700500201
-        Время реакции сети: 8.253164656442391E-5
-        МО числа потерянных пакетов: 1.0E-5
-        МО длительности пребывания требований 3 класса в S2: 4.007207368777969E-5*/
+
         writer.write("L01: " + L01 +
                 "\nМО числа требований 1 класса в S1:  = " + mp1Cnt + "\n" +
                 "МО числа требований 2 класса в S1: " + mp2Cnt + "\n" +
@@ -304,11 +299,6 @@ public class IModel {
     private double genExp(double lambda) {
         return -(Math.log(random.nextDouble()) / lambda);
     }
-
-/*    public static void main(String[] args) throws IOException {
-        writer = new FileWriter("IM_RES.txt", false);
-        new IModel(new double[]{0.1});
-    }*/
 
     public IModel(double l1, FileWriter writer, int cellNum) throws IOException {
         this.writer = writer;

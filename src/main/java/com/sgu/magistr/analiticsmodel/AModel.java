@@ -27,7 +27,7 @@ public class AModel {
 
     private int cellNum;
 
-    private void setL0(double l1){
+    private void setL0(double l1) {
         L01 = l1;
         L02 = L01 * 1000.0;
         L0 = L01 + L02;
@@ -66,10 +66,8 @@ public class AModel {
         for (int n = 1; n <= Q_CNT; n++) {
             q11 = q11 + n * p1[n - 1];
         }
-
         writer.write("L01: " + L01);
         writer.write("\nМО числа требований 1 класса в S1: " + q11);
-
         StatsGraphBuild.updateCell(1, cellNum, L01);
         StatsGraphBuild.updateCell(2, cellNum, q11);
         s += q11;
@@ -84,13 +82,10 @@ public class AModel {
 
     private double calcS2Characteristics() throws IOException {
         s02 = 1 - (L0 + L02) / MU2;
-
         for (int n = 1; n <= Q_CNT; n++) {
             p23[n - 1] = s02 * Math.pow((L0 + L02) / MU2, n);
         }
-
         p = 0.0;
-
         for (int n = 1; n <= Q_CNT; n++) {
             p = p + n * p23[n - 1];
         }
@@ -103,9 +98,7 @@ public class AModel {
 
         StatsGraphBuild.updateCell(4, cellNum, q22);
         StatsGraphBuild.updateCell(5, cellNum, q23);
-
         s = s + p;
-
         writer.write(
                 "\nМО числа требований в сети: " + s +
                         "\nВремя реакции сети: " + s / L0 +
@@ -114,9 +107,7 @@ public class AModel {
                         "\nМО числа потерянных пакетов: " + L01 / BETTA
 
         );
-
         StatsGraphBuild.updateCell(6, cellNum, s);
-
         return s;
     }
 
@@ -125,28 +116,17 @@ public class AModel {
         u12 = q12 / L02;
         u22 = q22 / L0;
         u23 = q23 / L02;
-
         writer.write(
                 "\nМО длительности пребывания требований 1 класса в S1: " + u11 +
                         "\nМО длительности пребывания требований 2 класса в S1: " + u12 +
                         "\nМО длительности пребывания требований 2 класса в S2: " + u22 +
                         "\nМО длительности пребывания требований 3 класса в S2: " + u23 + "\n\n"
         );
-
         StatsGraphBuild.updateCell(7, cellNum, u11);
         StatsGraphBuild.updateCell(8, cellNum, u12);
         StatsGraphBuild.updateCell(9, cellNum, u22);
         StatsGraphBuild.updateCell(10, cellNum, u23);
     }
-
-/*    public static void main(String[] args) throws IOException {
-        writer = new FileWriter("AM_RES.txt", false);
-        AModel mm = new AModel();
-        mm.calcS1Characteristics();
-        mm.calcS2Characteristics();
-        mm.calcS2S2TimeCharacteristics();
-        writer.flush();
-    }*/
 
     public AModel(double l1, FileWriter writer, int cellNum) throws IOException {
         this.writer = writer;
@@ -157,5 +137,4 @@ public class AModel {
         calcS2S2TimeCharacteristics();
         writer.flush();
     }
-
 }
