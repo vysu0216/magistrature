@@ -16,8 +16,10 @@ public class IModel {
     private List<Requirement> class1Queue = Collections.synchronizedList(new ArrayList<Requirement>()); // очередь требований 1 класса
     private List<Requirement> class2Queue = Collections.synchronizedList(new ArrayList<Requirement>()); // очередь требований 2 класса
     private Set<Event> EventsList = new HashSet<Event>(); // список генерируемых событий
-    private Map<Integer, Double> mpKMap = new HashMap<Integer, Double>(); // ассоц. массив для сумм k эл-тов в очереди МП
-    private Map<Integer, Double> ppKMap = new HashMap<Integer, Double>(); // ассоц. массив для сумм k эл-тов в очереди МП
+    private Map<Integer, Double> mp1KMap = new HashMap<Integer, Double>(); // ассоц. массив для сумм k эл-тов в очереди МП
+    private Map<Integer, Double> mp2KMap = new HashMap<Integer, Double>(); // ассоц. массив для сумм k эл-тов в очереди МП
+    private Map<Integer, Double> pp2KMap = new HashMap<Integer, Double>(); // ассоц. массив для сумм k эл-тов в очереди МП
+    private Map<Integer, Double> pp3KMap = new HashMap<Integer, Double>(); // ассоц. массив для сумм k эл-тов в очереди МП
     private Random random = new Random();
 
     private double currTime = 0; //     Значение текущего момента времени
@@ -153,7 +155,7 @@ public class IModel {
                     curReq = class2Queue.get(0);
                     TPP_3 += currTime - curReq.getGenerationTime();
                     curReq.setReleaseTime(currTime);
-                    mTimeAccumulator("PP_3", getQueueCount(class1Queue, 3), currTime - PPprevTime);
+                    mTimeAccumulator("PP_3", getQueueCount(class2Queue, 3), currTime - PPprevTime);
                     PPprevTime = currTime;
                     class2Queue.remove(curReq);
                     evalMath();
@@ -165,8 +167,10 @@ public class IModel {
         MMP_2 = TMP_2 / NMP_2;
         MPP_2 = TPP_2 / NPP_2;
         MPP_3 = TPP_3 / NPP_3;
-        double mpCnt = calculateMCount(mpKMap);
-        double ppCnt = calculateMCount(ppKMap);
+        double mp1Cnt = calculateMCount(mp1KMap);
+        double mp2Cnt = calculateMCount(mp2KMap);
+        double pp2Cnt = calculateMCount(pp2KMap);
+        double pp3Cnt = calculateMCount(pp3KMap);
        /* МО числа требований 1 класса в S1: 5.0001252531375915E-8
         МО числа требований 2 класса в S1: 2.5000626265687957E-5
         МО числа требований 2 класса в S2: 4.003204164613357E-4
@@ -185,9 +189,11 @@ public class IModel {
                 "Математическое ожидание длительности пребывания требований 2 класса в микропроцессоре = " + MMP_2 + "\n" +
                 "Математическое ожидание длительности пребывания требований 2 класса в приемопередатчике = " + MPP_2 + "\n" +
                 "Математическое ожидание длительности пребывания требований 3 класса в приемопередатчике = " + MPP_3 + "\n" +
-                "Математическое ожидание числа требований в сети = " + (mpCnt + ppCnt) + "\n" +
-                "Математическое ожидание числа требований в микропроцессоре = " + mpCnt + "\n" +
-                "Математическое ожидание числа требований в приемопередатчике = " + ppCnt + "\n\n");
+                "Математическое ожидание числа требований в сети = " + (mp1Cnt + pp2Cnt + mp2Cnt + pp3Cnt) + "\n" +
+                "Математическое ожидание числа требований 1 класса в микропроцессоре = " + mp1Cnt + "\n" +
+                "Математическое ожидание числа требований 2 класса в микропроцессоре = " + mp2Cnt + "\n" +
+                "Математическое ожидание числа требований 2 класса в приемопередатчике = " + pp2Cnt + "\n" +
+                "Математическое ожидание числа требований 3 класса в приемопередатчике = " + pp3Cnt + "\n\n");
     }
 
     private int getQueueCount(List<Requirement> queue, int classNum){
@@ -241,17 +247,29 @@ public class IModel {
      * @param interval   - интервал для суммирования с предыдущими
      */
     private void mTimeAccumulator(String systemType, int queSize, double interval) {
-        if (systemType.equals("MP")) {
-            if (!mpKMap.containsKey(queSize)) {
-                mpKMap.put(queSize, interval);
+        if (systemType.equals("MP_1")) {
+            if (!mp1KMap.containsKey(queSize)) {
+                mp1KMap.put(queSize, interval);
             } else {
-                mpKMap.put(queSize, mpKMap.get(queSize) + interval);
+                mp1KMap.put(queSize, mp1KMap.get(queSize) + interval);
+            }
+        } else if (systemType.equals("MP_2")) {
+            if (!mp2KMap.containsKey(queSize)) {
+                mp2KMap.put(queSize, interval);
+            } else {
+                mp2KMap.put(queSize, mp2KMap.get(queSize) + interval);
+            }
+        }else if (systemType.equals("PP_2")) {
+            if (!pp2KMap.containsKey(queSize)) {
+                pp2KMap.put(queSize, interval);
+            } else {
+                pp2KMap.put(queSize, pp2KMap.get(queSize) + interval);
             }
         } else {
-            if (!ppKMap.containsKey(queSize)) {
-                ppKMap.put(queSize, interval);
+            if (!pp3KMap.containsKey(queSize)) {
+                pp3KMap.put(queSize, interval);
             } else {
-                ppKMap.put(queSize, ppKMap.get(queSize) + interval);
+                pp3KMap.put(queSize, pp3KMap.get(queSize) + interval);
             }
         }
     }
