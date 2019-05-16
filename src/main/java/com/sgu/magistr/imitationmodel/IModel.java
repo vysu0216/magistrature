@@ -38,7 +38,7 @@ public class IModel {
         L01 = l1;
         L02 = L01 * 1000.0;
         double L0 = L01 + L02;
-        tMod = 50000 / L0;
+        tMod = 100000 / L0;
     }
 
     /**
