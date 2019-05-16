@@ -8,9 +8,9 @@ public class Generator {
     private static final double CLASS_2_REQ_GEN_LAMBDA =
             CLASS_1_REQ_GEN_LAMBDA * 1000.0;
     //15.0;//    интенсивность поступления требований 2 класса в МП
-    private static final double MP_CLASS_1_REQ_PROC_MU = 1.0/200000;//  интенсивность обработки требований 1 класса в МП
-    private static final double MP_CLASS_2_REQ_PROC_MU = 1.0/400000;//  интенсивность обработки требований 2 класса в ПП
-    private static final double PP_REQ_PROC_MU = 1.0/25000;//           интенсивность обработки требований ПП
+    private static final double MP_CLASS_1_REQ_PROC_MU = 1.0 / 200000;//  интенсивность обработки требований 1 класса в МП
+    private static final double MP_CLASS_2_REQ_PROC_MU = 1.0 / 400000;//  интенсивность обработки требований 2 класса в ПП
+    private static final double PP_REQ_PROC_MU = 1.0 / 25000;//           интенсивность обработки требований ПП
     private static final double TIME_OF_MODELING = 100000.0;
 
     private List<Requirement> class1Queue = Collections.synchronizedList(new ArrayList<Requirement>()); // очередь требований 1 класса
@@ -162,7 +162,7 @@ public class Generator {
                 "Математическое ожидание длительности пребывания требований 2 класса в микропроцессоре = " + MMP_2 + "\n" +
                 "Математическое ожидание длительности пребывания требований 2 класса в приемопередатчике = " + MPP_2 + "\n" +
                 "Математическое ожидание длительности пребывания требований 3 класса в приемопередатчике = " + MPP_3 + "\n" +
-                        "Математическое ожидание числа требований в сети = " + (mpCnt + ppCnt) + "\n" +
+                "Математическое ожидание числа требований в сети = " + (mpCnt + ppCnt) + "\n" +
                 "Математическое ожидание числа требований в микропроцессоре = " + mpCnt + "\n" +
                 "Математическое ожидание числа требований в приемопередатчике = " + ppCnt);
     }
