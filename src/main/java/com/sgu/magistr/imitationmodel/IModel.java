@@ -1,6 +1,7 @@
 package com.sgu.magistr.imitationmodel;
 
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 
 public class IModel {
@@ -10,7 +11,7 @@ public class IModel {
     private static final double MP_CLASS_1_REQ_PROC_MU = 1.0 / 200000;  //интенсивность обработки требований 1 класса в МП
     private static final double MP_CLASS_2_REQ_PROC_MU = 1.0 / 400000;  //интенсивность обработки требований 2 класса в ПП
     private static final double PP_REQ_PROC_MU = 1.0 / 25000;           //интенсивность обработки требований ПП
-    private static final double TIME_OF_MODELING = 100000.0;
+    private double tMod = 0.0;
 
     private List<Requirement> class1Queue = Collections.synchronizedList(new ArrayList<Requirement>()); // очередь требований 1 класса
     private List<Requirement> class2Queue = Collections.synchronizedList(new ArrayList<Requirement>()); // очередь требований 2 класса
@@ -27,15 +28,17 @@ public class IModel {
 
     private static FileWriter writer = null;
 
-    private void setL0(double l1){
+    private void setL0(double l1) {
         L01 = l1;
         L02 = L01 * 1000.0;
+        double L0 = L01 + L02;
+        tMod = 50000 / L0;
     }
 
     /**
      * Управляющая подпрограмма.
      */
-    private void emulate() {
+    private void emulate() throws IOException {
         Requirement curReq = null;
         Requirement nextReq = null;
         EventsList.add(new Event(currTime, EventTypesEnum.SEND_TO_MP_CLASS_1));
@@ -54,7 +57,7 @@ public class IModel {
         double MPP_2; //        Матожидание времени пребывания требований 2 класса в приемопередатчике
         double MPP_3; //        Матожидание времени пребывания требований 3 класса в приемопередатчике
 
-        while (currTime < TIME_OF_MODELING) {
+        while (currTime < tMod) {
             Event currEvent = getMinTimeEvent(EventsList);
             currTime = currEvent.getTime();
 
@@ -163,14 +166,22 @@ public class IModel {
         MPP_3 = TPP_3 / NPP_3;
         double mpCnt = calculateMCount(mpKMap);
         double ppCnt = calculateMCount(ppKMap);
-        System.out.println("Интенсивность поступления требований " + L01 +
+        /*System.out.println("Интенсивность поступления требований " + L01 +
                 "\nМатематическое ожидание длительности пребывания требований 1 класса в микропроцессоре = " + MMP_1 + "\n" +
                 "Математическое ожидание длительности пребывания требований 2 класса в микропроцессоре = " + MMP_2 + "\n" +
                 "Математическое ожидание длительности пребывания требований 2 класса в приемопередатчике = " + MPP_2 + "\n" +
                 "Математическое ожидание длительности пребывания требований 3 класса в приемопередатчике = " + MPP_3 + "\n" +
                 "Математическое ожидание числа требований в сети = " + (mpCnt + ppCnt) + "\n" +
                 "Математическое ожидание числа требований в микропроцессоре = " + mpCnt + "\n" +
-                "Математическое ожидание числа требований в приемопередатчике = " + ppCnt);
+                "Математическое ожидание числа требований в приемопередатчике = " + ppCnt);*/
+        writer.write("Интенсивность поступления требований " + L01 +
+                "\nМатематическое ожидание длительности пребывания требований 1 класса в микропроцессоре = " + MMP_1 + "\n" +
+                "Математическое ожидание длительности пребывания требований 2 класса в микропроцессоре = " + MMP_2 + "\n" +
+                "Математическое ожидание длительности пребывания требований 2 класса в приемопередатчике = " + MPP_2 + "\n" +
+                "Математическое ожидание длительности пребывания требований 3 класса в приемопередатчике = " + MPP_3 + "\n" +
+                "Математическое ожидание числа требований в сети = " + (mpCnt + ppCnt) + "\n" +
+                "Математическое ожидание числа требований в микропроцессоре = " + mpCnt + "\n" +
+                "Математическое ожидание числа требований в приемопередатчике = " + ppCnt + "\n\n");
     }
 
     private void evalMath() {
@@ -195,7 +206,7 @@ public class IModel {
      */
     private Event getMinTimeEvent(Set<Event> eventsList) {
         Event minTimeEvent = null;
-        double mintime = TIME_OF_MODELING * 2;
+        double mintime = tMod * 2;
         double eTime;
         for (Event event : eventsList) {
             if ((eTime = event.getTime()) < mintime) {
@@ -240,7 +251,7 @@ public class IModel {
         double mCount = 0;
 
         for (Integer k : kMap.keySet()) {
-            mCount += ((k * kMap.get(k)) / TIME_OF_MODELING);
+            mCount += ((k * kMap.get(k)) / tMod);
         }
         return mCount;
     }
@@ -259,9 +270,10 @@ public class IModel {
         new IModel(new double[]{0.1});
     }*/
 
-    public IModel(double l1){
-            setL0(l1);
-            emulate();
+    public IModel(double l1, FileWriter writer) throws IOException {
+        this.writer = writer;
+        setL0(l1);
+        emulate();
     }
 
 }
