@@ -1,11 +1,10 @@
 package com.sgu.magistr.imitationmodel;
 
-import java.text.DecimalFormat;
 import java.util.*;
 
 public class Generator {
 
-    private static final double CLASS_1_REQ_GEN_LAMBDA = 5.0;//    интенсивность поступления требований 1 класса в МП
+    private static final double CLASS_1_REQ_GEN_LAMBDA = 10.0;//    интенсивность поступления требований 1 класса в МП
     private static final double CLASS_2_REQ_GEN_LAMBDA =
             CLASS_1_REQ_GEN_LAMBDA * 1000.0;
     //15.0;//    интенсивность поступления требований 2 класса в МП
