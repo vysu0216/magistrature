@@ -1,5 +1,7 @@
 package com.sgu.magistr.imitationmodel;
 
+import com.sgu.magistr.StatsGraphBuild;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
@@ -29,6 +31,8 @@ public class IModel {
     private boolean isBusyPP = false; //Флаг занятости приемопередатчика
 
     private static FileWriter writer = null;
+
+    private int cellNum;
 
     private void setL0(double l1) {
         L01 = l1;
@@ -171,29 +175,33 @@ public class IModel {
         double mp2Cnt = calculateMCount(mp2KMap);
         double pp2Cnt = calculateMCount(pp2KMap);
         double pp3Cnt = calculateMCount(pp3KMap);
-       /* МО числа требований 1 класса в S1: 5.0001252531375915E-8
-        МО числа требований 2 класса в S1: 2.5000626265687957E-5
-        МО числа требований 2 класса в S2: 4.003204164613357E-4
-        МО числа требований 3 класса в S2: 4.007207368777969E-4
-        МО числа требований в сети: 8.261417821098833E-4
+       /*
         Время реакции сети: 8.253164656442391E-5
         Вероятность, что узел пуст: 0.9991745700500201
         Время реакции сети: 8.253164656442391E-5
         МО числа потерянных пакетов: 1.0E-5
-        МО длительности пребывания требований 1 класса в S1: 5.000125253137592E-6
-        МО длительности пребывания требований 2 класса в S1: 2.500062626568796E-6
-        МО длительности пребывания требований 2 класса в S2: 3.9992049596537034E-5
         МО длительности пребывания требований 3 класса в S2: 4.007207368777969E-5*/
         writer.write("L01: " + L01 +
-                "\nМатематическое ожидание длительности пребывания требований 1 класса в микропроцессоре = " + MMP_1 + "\n" +
-                "Математическое ожидание длительности пребывания требований 2 класса в микропроцессоре = " + MMP_2 + "\n" +
-                "Математическое ожидание длительности пребывания требований 2 класса в приемопередатчике = " + MPP_2 + "\n" +
-                "Математическое ожидание длительности пребывания требований 3 класса в приемопередатчике = " + MPP_3 + "\n" +
-                "Математическое ожидание числа требований в сети = " + (mp1Cnt + pp2Cnt + mp2Cnt + pp3Cnt) + "\n" +
-                "Математическое ожидание числа требований 1 класса в микропроцессоре = " + mp1Cnt + "\n" +
-                "Математическое ожидание числа требований 2 класса в микропроцессоре = " + mp2Cnt + "\n" +
-                "Математическое ожидание числа требований 2 класса в приемопередатчике = " + pp2Cnt + "\n" +
-                "Математическое ожидание числа требований 3 класса в приемопередатчике = " + pp3Cnt + "\n\n");
+                "\nМО числа требований 1 класса в S1:  = " + mp1Cnt + "\n" +
+                "МО числа требований 2 класса в S1: " + mp2Cnt + "\n" +
+                "МО числа требований 2 класса в S2: " + pp2Cnt + "\n" +
+                "МО числа требований 3 класса в S2: " + pp3Cnt + "\n" +
+                "МО числа требований в сети: " + (mp1Cnt + pp2Cnt + mp2Cnt + pp3Cnt) + "\n" +
+                "МО длительности пребывания требований 1 класса в S1: " + MMP_1 + "\n" +
+                "МО длительности пребывания требований 2 класса в S1: " + MMP_2 + "\n" +
+                "МО длительности пребывания требований 2 класса в S2: " + MPP_2 + "\n" +
+                "МО длительности пребывания требований 3 класса в S2: " + MPP_3 + "\n\n");
+
+        StatsGraphBuild.updateCell(13, cellNum, L01);
+        StatsGraphBuild.updateCell(14, cellNum, mp1Cnt);
+        StatsGraphBuild.updateCell(15, cellNum, mp2Cnt);
+        StatsGraphBuild.updateCell(16, cellNum, pp2Cnt);
+        StatsGraphBuild.updateCell(17, cellNum, pp3Cnt);
+        StatsGraphBuild.updateCell(18, cellNum, (mp1Cnt + pp2Cnt + mp2Cnt + pp3Cnt));
+        StatsGraphBuild.updateCell(19, cellNum, MMP_1);
+        StatsGraphBuild.updateCell(20, cellNum, MMP_2);
+        StatsGraphBuild.updateCell(21, cellNum, MPP_2);
+        StatsGraphBuild.updateCell(22, cellNum, MPP_3);
     }
 
     private int getQueueCount(List<Requirement> queue, int classNum){
@@ -302,8 +310,9 @@ public class IModel {
         new IModel(new double[]{0.1});
     }*/
 
-    public IModel(double l1, FileWriter writer) throws IOException {
+    public IModel(double l1, FileWriter writer, int cellNum) throws IOException {
         this.writer = writer;
+        this.cellNum = cellNum;
         setL0(l1);
         emulate();
     }

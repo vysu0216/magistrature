@@ -1,5 +1,7 @@
 package com.sgu.magistr.analiticsmodel;
 
+import com.sgu.magistr.StatsGraphBuild;
+
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -22,6 +24,8 @@ public class AModel {
     private double s, p = 0.0;
     private double q11, q12, q22, q23 = 0.0;
     private double u11, u12, u22, u23 = 0.0;
+
+    private int cellNum;
 
     private void setL0(double l1){
         L01 = l1;
@@ -65,11 +69,15 @@ public class AModel {
 
         writer.write("L01: " + L01);
         writer.write("\nМО числа требований 1 класса в S1: " + q11);
+
+        StatsGraphBuild.updateCell(1, cellNum, L01);
+        StatsGraphBuild.updateCell(2, cellNum, q11);
         s += q11;
         for (int n = 0; n < Q_CNT; n++) {
             q12 += (n + 1) * p2[n];
         }
         writer.write("\nМО числа требований 2 класса в S1: " + q12);
+        StatsGraphBuild.updateCell(3, cellNum, q12);
         s += p;
         return s;
     }
@@ -93,6 +101,9 @@ public class AModel {
                 "\nМО числа требований 2 класса в S2: " + q22 +
                         "\nМО числа требований 3 класса в S2: " + q23);
 
+        StatsGraphBuild.updateCell(4, cellNum, q22);
+        StatsGraphBuild.updateCell(5, cellNum, q23);
+
         s = s + p;
 
         writer.write(
@@ -103,6 +114,8 @@ public class AModel {
                         "\nМО числа потерянных пакетов: " + L01 / BETTA
 
         );
+
+        StatsGraphBuild.updateCell(6, cellNum, s);
 
         return s;
     }
@@ -119,6 +132,11 @@ public class AModel {
                         "\nМО длительности пребывания требований 2 класса в S2: " + u22 +
                         "\nМО длительности пребывания требований 3 класса в S2: " + u23 + "\n\n"
         );
+
+        StatsGraphBuild.updateCell(7, cellNum, u11);
+        StatsGraphBuild.updateCell(8, cellNum, u12);
+        StatsGraphBuild.updateCell(9, cellNum, u22);
+        StatsGraphBuild.updateCell(10, cellNum, u23);
     }
 
 /*    public static void main(String[] args) throws IOException {
@@ -130,8 +148,9 @@ public class AModel {
         writer.flush();
     }*/
 
-    public AModel(double l1, FileWriter writer) throws IOException {
+    public AModel(double l1, FileWriter writer, int cellNum) throws IOException {
         this.writer = writer;
+        this.cellNum = cellNum;
         setL0(l1);
         calcS1Characteristics();
         calcS2Characteristics();

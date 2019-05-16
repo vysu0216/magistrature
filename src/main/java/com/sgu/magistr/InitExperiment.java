@@ -16,13 +16,14 @@ public class InitExperiment {
     public static void main(String[] args) throws IOException {
         FileWriter writer = new FileWriter("RES.txt", false);
         writer.write("Данные аналитической модели: \n");
-        for (double l1 : l1Array) {
-            new AModel(l1, writer);
+
+        for (int i = 0; i < l1Array.length; i++) {
+            new AModel(l1Array[i], writer, i + 1);
         }
 
         writer.write("Данные имитационной модели: \n");
-        for (double l1 : l1Array) {
-            new IModel(l1, writer);
+        for (int i = 0; i < l1Array.length; i++) {
+            new IModel(l1Array[i], writer, i + 1);
         }
 
         writer.close();
