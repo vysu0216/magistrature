@@ -1,38 +1,46 @@
 package com.sgu.magistr.imitationmodel;
 
+import com.sgu.magistr.StatsGraphBuild;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
 public class IModel {
 
-    private double L01 = 0.0;                                           //интенсивность поступления требований 1 класса в МП
-    private double L02 = 0.0;                                           //интенсивность поступления требований 2 класса в МП
-    private static final double MP_CLASS_1_REQ_PROC_MU = 1.0 / 200000;  //интенсивность обработки требований 1 класса в МП
-    private static final double MP_CLASS_2_REQ_PROC_MU = 1.0 / 400000;  //интенсивность обработки требований 2 класса в ПП
-    private static final double PP_REQ_PROC_MU = 1.0 / 25000;           //интенсивность обработки требований ПП
-    private double tMod = 0.0;
+    private double L01 = 0.0;                           //интенсивность поступления требований 1 класса в S1
+    private double L02 = 0.0;                           //интенсивность поступления требований 2 класса в S2
+    private static final double MU11 = 1.0 / 200000;    //интенсивность обработки требований 1 класса в S1
+    private static final double MU12 = 1.0 / 400000;    //интенсивность обработки требований 2 класса в S1
+    private static final double MU23 = 1.0 / 25000;     //интенсивность обработки требований S2
+    private double tMod = 0.0;                          //модельное время
 
-    private List<Requirement> class1Queue = Collections.synchronizedList(new ArrayList<Requirement>()); // очередь требований 1 класса
-    private List<Requirement> class2Queue = Collections.synchronizedList(new ArrayList<Requirement>()); // очередь требований 2 класса
-    private Set<Event> EventsList = new HashSet<Event>(); // список генерируемых событий
-    private Map<Integer, Double> mpKMap = new HashMap<Integer, Double>(); // ассоц. массив для сумм k эл-тов в очереди МП
-    private Map<Integer, Double> ppKMap = new HashMap<Integer, Double>(); // ассоц. массив для сумм k эл-тов в очереди МП
+    // очередь требований в систему S1:
+    private List<Requirement> S1Queue = Collections.synchronizedList(new ArrayList<Requirement>());
+    // очередь требований в систему S2:
+    private List<Requirement> S2Queue = Collections.synchronizedList(new ArrayList<Requirement>());
+    private Set<Event> EventsList = new HashSet<Event>();                  //список генерируемых событий
+    private Map<Integer, Double> S11KMap = new HashMap<Integer, Double>(); //ассоц. массив для сумм k эл-тов 1 класса в очереди S1
+    private Map<Integer, Double> S12KMap = new HashMap<Integer, Double>(); //ассоц. массив для сумм k эл-тов 2 класса в очереди S1
+    private Map<Integer, Double> S22KMap = new HashMap<Integer, Double>(); //ассоц. массив для сумм k эл-тов 2 класса в очереди S2
+    private Map<Integer, Double> S23KMap = new HashMap<Integer, Double>(); //ассоц. массив для сумм k эл-тов 3 класса в очереди S2
     private Random random = new Random();
 
-    private double currTime = 0; //     Значение текущего момента времени
-    private double MPprevTime = 0.0; // Значение предыдущего момента времени для МП
-    private double PPprevTime = 0.0; // Значение предыдущего момента времени для ПП
-    private boolean isBusyMP = false; //Флаг занятости микропроцессора
-    private boolean isBusyPP = false; //Флаг занятости приемопередатчика
+    private double currTime = 0;        //Значение текущего момента времени
+    private double S1prevTime = 0.0;    //Значение предыдущего момента времени для S1
+    private double S2prevTime = 0.0;    //Значение предыдущего момента времени для S2
+    private boolean isBusyS1 = false;   //Флаг занятости микропроцессора
+    private boolean isBusyS2 = false;   //Флаг занятости приемопередатчика
 
     private static FileWriter writer = null;
+
+    private int cellNum;
 
     private void setL0(double l1) {
         L01 = l1;
         L02 = L01 * 1000.0;
         double L0 = L01 + L02;
-        tMod = 50000 / L0;
+        tMod = 100000 / L0;
     }
 
     /**
@@ -44,18 +52,18 @@ public class IModel {
         EventsList.add(new Event(currTime, EventTypesEnum.SEND_TO_MP_CLASS_1));
         EventsList.add(new Event(currTime, EventTypesEnum.SEND_TO_PP_CLASS_2));
 
-        double TMP_1 = 0.0; //  Сумма длительностей пребывания требований 1 класса в МП
-        double TMP_2 = 0.0; //  Сумма длительностей пребывания требований 2 класса в МП
-        double TPP_2 = 0.0; //  Сумма длительностей пребывания всех требований в ПП
-        double TPP_3 = 0.0; //  Сумма длительностей пребывания всех требований в ПП
-        int NMP_1 = 1; //       Сумма требований 1 класса поступающих в микропроцессор
-        int NMP_2 = 1; //       Сумма требований 2 класса поступающих в микропроцессор
-        int NPP_2 = 1; //       Сумма требований 2 класса поступающих в приемопередатчик
-        int NPP_3 = 1; //       Сумма требований 3 класса поступающих в приемопередатчик
-        double MMP_1; //        Матожидание времени пребывания требований 1 класса в микропроцессоре
-        double MMP_2; //        Матожидание времени пребывания требований 2 класса в микропроцессоре
-        double MPP_2; //        Матожидание времени пребывания требований 2 класса в приемопередатчике
-        double MPP_3; //        Матожидание времени пребывания требований 3 класса в приемопередатчике
+        double TS11 = 0.0;      //Сумма длительностей пребывания требований 1 класса в S1
+        double TS12 = 0.0;      //Сумма длительностей пребывания требований 2 класса в S1
+        double TS22 = 0.0;      //Сумма длительностей пребывания всех требований в S2
+        double TS23 = 0.0;      //Сумма длительностей пребывания всех требований в S2
+        int NS11 = 1;           //Сумма требований 1 класса поступающих в S1
+        int NS12 = 1;           //Сумма требований 2 класса поступающих в S1
+        int NS22 = 1;           //Сумма требований 2 класса поступающих в S2
+        int NS23 = 1;           //Сумма требований 3 класса поступающих в S2
+        double MS11;            //МО времени пребывания требований 1 класса в S1
+        double MS12;            //МО времени пребывания требований 2 класса в S1
+        double MS22;            //МО времени пребывания требований 2 класса в S2
+        double MS23;            //МО времени пребывания требований 3 класса в S2
 
         while (currTime < tMod) {
             Event currEvent = getMinTimeEvent(EventsList);
@@ -64,138 +72,156 @@ public class IModel {
             switch (currEvent.getEventType()) {
                 case SEND_TO_MP_CLASS_1:
                     curReq = new Requirement(currTime, 1);
-                    mTimeAccumulator("MP", class1Queue.size(), currTime - MPprevTime);
-                    MPprevTime = currTime;
-                    class1Queue.add(curReq);
+                    mTimeAccumulator("MP_1", getQueueCount(S1Queue, 1), currTime - S1prevTime);
+                    S1prevTime = currTime;
+                    S1Queue.add(curReq);
                     EventsList.add(new Event(currTime + genExp(L01), EventTypesEnum.SEND_TO_MP_CLASS_1));
-                    if (!isBusyMP) {
+                    if (!isBusyS1) {
                         curReq.setProcStartTime(currTime);
-                        EventsList.add(new Event(currTime + MP_CLASS_1_REQ_PROC_MU/*genExp(MP_CLASS_1_REQ_PROC_MU)*/, EventTypesEnum.FINISH_SERVE_IN_MP));
-                        isBusyMP = true;
+                        EventsList.add(new Event(currTime + MU11, EventTypesEnum.FINISH_SERVE_IN_MP));
+                        isBusyS1 = true;
                     }
                     break;
                 case SEND_TO_PP_CLASS_2:
                     curReq = new Requirement(currTime, 2);
-                    mTimeAccumulator("PP", class2Queue.size(), currTime - PPprevTime);
-                    PPprevTime = currTime;
-                    class2Queue.add(curReq);
+                    mTimeAccumulator("PP_2", getQueueCount(S2Queue, 2), currTime - S2prevTime);
+                    S2prevTime = currTime;
+                    S2Queue.add(curReq);
                     EventsList.add(new Event(currTime + genExp(L02), EventTypesEnum.SEND_TO_PP_CLASS_2));
-                    if (!isBusyPP) {
+                    if (!isBusyS2) {
                         curReq.setProcStartTime(currTime);
-                        EventsList.add(new Event(currTime + PP_REQ_PROC_MU/*genExp(PP_REQ_PROC_MU)*/, EventTypesEnum.FINISH_SERVE_IN_PP));
-                        isBusyPP = true;
+                        EventsList.add(new Event(currTime + MU23, EventTypesEnum.FINISH_SERVE_IN_PP));
+                        isBusyS2 = true;
                     }
                     break;
 
                 case SEND_TO_PP_CLASS_3:
                     curReq = new Requirement(currTime, 3);
-                    mTimeAccumulator("PP", class2Queue.size(), currTime - PPprevTime);
-                    PPprevTime = currTime;
-                    class2Queue.add(curReq);
-                    if (!isBusyPP) {
+                    mTimeAccumulator("PP_3", getQueueCount(S2Queue, 3), currTime - S2prevTime);
+                    S2prevTime = currTime;
+                    S2Queue.add(curReq);
+                    if (!isBusyS2) {
                         curReq.setProcStartTime(currTime);
-                        EventsList.add(new Event(currTime + PP_REQ_PROC_MU/* genExp(PP_REQ_PROC_MU)*/, EventTypesEnum.FINISH_SERVE_CLASS_3));
-                        isBusyPP = true;
+                        EventsList.add(new Event(currTime + MU23, EventTypesEnum.FINISH_SERVE_CLASS_3));
+                        isBusyS2 = true;
                     }
                     break;
 
                 case SEND_TO_MP_CLASS_2:
                     curReq = new Requirement(currTime, 2);
-                    mTimeAccumulator("MP", class1Queue.size(), currTime - MPprevTime);
-                    class1Queue.add(curReq);
-                    MPprevTime = currTime;
-                    if (!isBusyMP) {
+                    mTimeAccumulator("MP_2", getQueueCount(S1Queue, 2), currTime - S1prevTime);
+                    S1Queue.add(curReq);
+                    S1prevTime = currTime;
+                    if (!isBusyS1) {
                         curReq.setProcStartTime(currTime);
-                        EventsList.add(new Event(currTime + MP_CLASS_2_REQ_PROC_MU/*genExp(MP_CLASS_2_REQ_PROC_MU)*/, EventTypesEnum.FINISH_SERVE_IN_MP));
-                        isBusyMP = true;
+                        EventsList.add(new Event(currTime + MU12, EventTypesEnum.FINISH_SERVE_IN_MP));
+                        isBusyS1 = true;
                     }
                     break;
 
                 case FINISH_SERVE_IN_MP:
-                    curReq = class1Queue.get(0);
+                    curReq = S1Queue.get(0);
                     if (curReq.getReqClass() == 1) {
-                        TMP_1 += currTime - curReq.getGenerationTime();
-                        NMP_1++;
+                        TS11 += currTime - curReq.getGenerationTime();
+                        NS11++;
+                        mTimeAccumulator("MP_1", getQueueCount(S1Queue, 1), currTime - S1prevTime);
                     } else if (curReq.getReqClass() == 2) {
-                        TMP_2 += currTime - curReq.getGenerationTime();
-                        NMP_2++;
+                        TS12 += currTime - curReq.getGenerationTime();
+                        NS12++;
+                        mTimeAccumulator("MP_2", getQueueCount(S1Queue, 2), currTime - S1prevTime);
                     }
                     EventsList.add(new Event(currTime, curReq.getGenerationTime(), EventTypesEnum.SEND_TO_PP_CLASS_3));
-                    mTimeAccumulator("MP", class1Queue.size(), currTime - MPprevTime);
-                    MPprevTime = currTime;
-                    class1Queue.remove(curReq);
-                    if (!class1Queue.isEmpty()) {
-                        nextReq = class1Queue.get(0);
+                    S1prevTime = currTime;
+                    S1Queue.remove(curReq);
+                    if (!S1Queue.isEmpty()) {
+                        nextReq = S1Queue.get(0);
                         nextReq.setProcStartTime(currTime);
                         if (nextReq.getReqClass() == 1)
-                            EventsList.add(new Event(currTime + MP_CLASS_1_REQ_PROC_MU/*genExp(MP_CLASS_1_REQ_PROC_MU)*/, EventTypesEnum.FINISH_SERVE_IN_MP));
+                            EventsList.add(new Event(currTime + MU11, EventTypesEnum.FINISH_SERVE_IN_MP));
                         else
-                            EventsList.add(new Event(currTime + MP_CLASS_2_REQ_PROC_MU/*genExp(MP_CLASS_2_REQ_PROC_MU)*/, EventTypesEnum.FINISH_SERVE_IN_MP));
-                        isBusyMP = true;
+                            EventsList.add(new Event(currTime + MU12, EventTypesEnum.FINISH_SERVE_IN_MP));
+                        isBusyS1 = true;
                     } else
-                        isBusyMP = false;
+                        isBusyS1 = false;
                     break;
 
                 case FINISH_SERVE_IN_PP:
-                    curReq = class2Queue.get(0);
-                    NPP_2++;
-                    TPP_2 += currTime - curReq.getGenerationTime();
+                    curReq = S2Queue.get(0);
+                    NS22++;
+                    TS22 += currTime - curReq.getGenerationTime();
                     EventsList.add(new Event(currTime, curReq.getGenerationTime(), EventTypesEnum.SEND_TO_MP_CLASS_2));
-                    mTimeAccumulator("PP", class2Queue.size(), currTime - PPprevTime);
-                    PPprevTime = currTime;
-                    class2Queue.remove(curReq);
+                    mTimeAccumulator("PP_2", getQueueCount(S2Queue, 2), currTime - S2prevTime);
+                    S2prevTime = currTime;
+                    S2Queue.remove(curReq);
                     evalMath();
                     break;
 
                 case FINISH_SERVE_CLASS_3:
-                    NPP_3++;
-                    curReq = class2Queue.get(0);
-                    TPP_3 += currTime - curReq.getGenerationTime();
+                    NS23++;
+                    curReq = S2Queue.get(0);
+                    TS23 += currTime - curReq.getGenerationTime();
                     curReq.setReleaseTime(currTime);
-                    mTimeAccumulator("PP", class2Queue.size(), currTime - PPprevTime);
-                    PPprevTime = currTime;
-                    class2Queue.remove(curReq);
+                    mTimeAccumulator("PP_3", getQueueCount(S2Queue, 3), currTime - S2prevTime);
+                    S2prevTime = currTime;
+                    S2Queue.remove(curReq);
                     evalMath();
                     break;
             }
             EventsList.remove(currEvent);
         }
-        MMP_1 = TMP_1 / NMP_1;
-        MMP_2 = TMP_2 / NMP_2;
-        MPP_2 = TPP_2 / NPP_2;
-        MPP_3 = TPP_3 / NPP_3;
-        double mpCnt = calculateMCount(mpKMap);
-        double ppCnt = calculateMCount(ppKMap);
-        /*System.out.println("Интенсивность поступления требований " + L01 +
-                "\nМатематическое ожидание длительности пребывания требований 1 класса в микропроцессоре = " + MMP_1 + "\n" +
-                "Математическое ожидание длительности пребывания требований 2 класса в микропроцессоре = " + MMP_2 + "\n" +
-                "Математическое ожидание длительности пребывания требований 2 класса в приемопередатчике = " + MPP_2 + "\n" +
-                "Математическое ожидание длительности пребывания требований 3 класса в приемопередатчике = " + MPP_3 + "\n" +
-                "Математическое ожидание числа требований в сети = " + (mpCnt + ppCnt) + "\n" +
-                "Математическое ожидание числа требований в микропроцессоре = " + mpCnt + "\n" +
-                "Математическое ожидание числа требований в приемопередатчике = " + ppCnt);*/
-        writer.write("Интенсивность поступления требований " + L01 +
-                "\nМатематическое ожидание длительности пребывания требований 1 класса в микропроцессоре = " + MMP_1 + "\n" +
-                "Математическое ожидание длительности пребывания требований 2 класса в микропроцессоре = " + MMP_2 + "\n" +
-                "Математическое ожидание длительности пребывания требований 2 класса в приемопередатчике = " + MPP_2 + "\n" +
-                "Математическое ожидание длительности пребывания требований 3 класса в приемопередатчике = " + MPP_3 + "\n" +
-                "Математическое ожидание числа требований в сети = " + (mpCnt + ppCnt) + "\n" +
-                "Математическое ожидание числа требований в микропроцессоре = " + mpCnt + "\n" +
-                "Математическое ожидание числа требований в приемопередатчике = " + ppCnt + "\n\n");
+        MS11 = TS11 / NS11;
+        MS12 = TS12 / NS12;
+        MS22 = TS22 / NS22;
+        MS23 = TS23 / NS23;
+        double S11Cnt = calculateMCount(S11KMap);
+        double S12Cnt = calculateMCount(S12KMap);
+        double S22Cnt = calculateMCount(S22KMap);
+        double S23Cnt = calculateMCount(S23KMap);
+
+        writer.write("L01: " + L01 +
+                "\nМО числа требований 1 класса в S1:  = " + S11Cnt + "\n" +
+                "МО числа требований 2 класса в S1: " + S12Cnt + "\n" +
+                "МО числа требований 2 класса в S2: " + S22Cnt + "\n" +
+                "МО числа требований 3 класса в S2: " + S23Cnt + "\n" +
+                "МО числа требований в сети: " + (S11Cnt + S22Cnt + S12Cnt + S23Cnt) + "\n" +
+                "МО длительности пребывания требований 1 класса в S1: " + MS11 + "\n" +
+                "МО длительности пребывания требований 2 класса в S1: " + MS12 + "\n" +
+                "МО длительности пребывания требований 2 класса в S2: " + MS22 + "\n" +
+                "МО длительности пребывания требований 3 класса в S2: " + MS23 + "\n\n");
+
+        StatsGraphBuild.updateCell(13, cellNum, L01);
+        StatsGraphBuild.updateCell(14, cellNum, S11Cnt);
+        StatsGraphBuild.updateCell(15, cellNum, S12Cnt);
+        StatsGraphBuild.updateCell(16, cellNum, S22Cnt);
+        StatsGraphBuild.updateCell(17, cellNum, S23Cnt);
+        StatsGraphBuild.updateCell(18, cellNum, (S11Cnt + S22Cnt + S12Cnt + S23Cnt));
+        StatsGraphBuild.updateCell(19, cellNum, MS11);
+        StatsGraphBuild.updateCell(20, cellNum, MS12);
+        StatsGraphBuild.updateCell(21, cellNum, MS22);
+        StatsGraphBuild.updateCell(22, cellNum, MS23);
+    }
+
+    private int getQueueCount(List<Requirement> queue, int classNum){
+        int counter = 0;
+        for (Requirement req : queue) {
+            if(req.getReqClass() == classNum)
+                counter++;
+        }
+        return counter;
     }
 
     private void evalMath() {
         Requirement nextReq;
-        if (!class2Queue.isEmpty()) {
-            nextReq = class2Queue.get(0);
+        if (!S2Queue.isEmpty()) {
+            nextReq = S2Queue.get(0);
             nextReq.setProcStartTime(currTime);
             if (nextReq.getReqClass() == 2)
-                EventsList.add(new Event(currTime + PP_REQ_PROC_MU/*genExp(PP_REQ_PROC_MU)*/, EventTypesEnum.FINISH_SERVE_IN_PP));
+                EventsList.add(new Event(currTime + MU23, EventTypesEnum.FINISH_SERVE_IN_PP));
             else
-                EventsList.add(new Event(currTime + PP_REQ_PROC_MU/*genExp(PP_REQ_PROC_MU)*/, EventTypesEnum.FINISH_SERVE_CLASS_3));
-            isBusyPP = true;
+                EventsList.add(new Event(currTime + MU23, EventTypesEnum.FINISH_SERVE_CLASS_3));
+            isBusyS2 = true;
         } else
-            isBusyPP = false;
+            isBusyS2 = false;
     }
 
     /**
@@ -226,18 +252,29 @@ public class IModel {
      * @param interval   - интервал для суммирования с предыдущими
      */
     private void mTimeAccumulator(String systemType, int queSize, double interval) {
-        double tmpInterval = 0;
-        if (systemType.equals("MP")) {
-            if (!mpKMap.containsKey(queSize)) {
-                mpKMap.put(queSize, interval);
+        if (systemType.equals("MP_1")) {
+            if (!S11KMap.containsKey(queSize)) {
+                S11KMap.put(queSize, interval);
             } else {
-                mpKMap.put(queSize, mpKMap.get(queSize) + interval);
+                S11KMap.put(queSize, S11KMap.get(queSize) + interval);
+            }
+        } else if (systemType.equals("MP_2")) {
+            if (!S12KMap.containsKey(queSize)) {
+                S12KMap.put(queSize, interval);
+            } else {
+                S12KMap.put(queSize, S12KMap.get(queSize) + interval);
+            }
+        }else if (systemType.equals("PP_2")) {
+            if (!S22KMap.containsKey(queSize)) {
+                S22KMap.put(queSize, interval);
+            } else {
+                S22KMap.put(queSize, S22KMap.get(queSize) + interval);
             }
         } else {
-            if (!ppKMap.containsKey(queSize)) {
-                ppKMap.put(queSize, interval);
+            if (!S23KMap.containsKey(queSize)) {
+                S23KMap.put(queSize, interval);
             } else {
-                ppKMap.put(queSize, ppKMap.get(queSize) + interval);
+                S23KMap.put(queSize, S23KMap.get(queSize) + interval);
             }
         }
     }
@@ -265,13 +302,9 @@ public class IModel {
         return -(Math.log(random.nextDouble()) / lambda);
     }
 
-/*    public static void main(String[] args) throws IOException {
-        writer = new FileWriter("IM_RES.txt", false);
-        new IModel(new double[]{0.1});
-    }*/
-
-    public IModel(double l1, FileWriter writer) throws IOException {
+    public IModel(double l1, FileWriter writer, int cellNum) throws IOException {
         this.writer = writer;
+        this.cellNum = cellNum;
         setL0(l1);
         emulate();
     }
