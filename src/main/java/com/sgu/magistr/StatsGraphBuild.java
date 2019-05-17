@@ -15,7 +15,7 @@ public class StatsGraphBuild {
     static XSSFCell cell;
 
     static {
-        file = new File("D:\\Imitation_Model\\magistrature\\CharacteristicsDependancy.xlsx");
+        file = new File("CharacteristicsDependancy.xlsx");
         try {
             inputStream = new FileInputStream(file);
             workbook = new XSSFWorkbook(inputStream);
@@ -34,9 +34,5 @@ public class StatsGraphBuild {
         FileOutputStream out = new FileOutputStream(file);
         workbook.write(out);
         out.close();
-    }
-
-    public static void main(String[] args) throws IOException {
-        updateCell(1,1,0.1111111);
     }
 }

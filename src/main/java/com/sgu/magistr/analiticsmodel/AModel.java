@@ -6,16 +6,16 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class AModel {
-    private double L01 = 0.0; //интенсивность потока в систему S1 (микропроцессор)
-    private double L02 = 0.0; //интенсивность потока в в систему S2 (приемо-передатчик)
-    private double L0; // общая интенсивность поступления требований в узел
-    private static final double MU11 = 200000.0;  //интенсивность обслуживания требований класса 1 в системе S1
-    private static final double MU12 = 400000.0;//  интенсивность обслуживания требований класса 2 в системе S1
-    private static final double MU2 = 25000.0;//  интенсивность обслуживания требований классов 1 и 2 в системе S2
-    private static final double BETTA = 1000.0; //параметр экспон ф-ции распред-я длит восстановления узла
+    private double L01 = 0.0;                       //интенсивность потока в систему S1 (микропроцессор)
+    private double L02 = 0.0;                       //интенсивность потока в в систему S2 (приемо-передатчик)
+    private double L0;                              //общая интенсивность поступления требований в узел
+    private static final double MU11 = 200000.0;    //интенсивность обслуживания требований класса 1 в системе S1
+    private static final double MU12 = 400000.0;    //интенсивность обслуживания требований класса 2 в системе S1
+    private static final double MU2 = 25000.0;      //интенсивность обслуживания требований классов 1 и 2 в системе S2
+    private static final double BETTA = 1000.0;     //параметр экспон ф-ции распред-я длит восстановления узла
+    private static final int Q_CNT = 20;            //интенсивность обслуживания требований классов 1 и 2 в системе S2
 
     private static FileWriter writer = null;
-    private static final int Q_CNT = 20;//  интенсивность обслуживания требований классов 1 и 2 в системе S2
 
     private double p1[] = new double[Q_CNT];
     private double p2[] = new double[Q_CNT];
