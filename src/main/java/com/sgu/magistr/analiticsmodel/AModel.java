@@ -139,7 +139,7 @@ public class AModel {
         calcS2S2TimeCharacteristics();
         writeOutput(0);
         binomReliability();
-        writeOutput(12);
+        writeOutput(49);
         writer.flush();
     }
 
