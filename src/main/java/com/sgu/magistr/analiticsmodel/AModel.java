@@ -12,6 +12,7 @@ public class AModel {
     private static final double MU11 = 200000.0;    //интенсивность обслуживания требований класса 1 в системе S1
     private static final double MU12 = 400000.0;    //интенсивность обслуживания требований класса 2 в системе S1
     private static final double MU2 = 25000.0;      //интенсивность обслуживания требований классов 1 и 2 в системе S2
+    private static final double ALPHA = 0.5;        //параметр экспон ф-ции распред-я длит восстановления узла
     private static final double BETTA = 1000.0;     //параметр экспон ф-ции распред-я длит восстановления узла
     private static final int Q_CNT = 20;            //интенсивность обслуживания требований классов 1 и 2 в системе S2
 
@@ -66,16 +67,10 @@ public class AModel {
         for (int n = 1; n <= Q_CNT; n++) {
             q11 = q11 + n * p1[n - 1];
         }
-        writer.write("L01: " + L01);
-        writer.write("\nМО числа требований 1 класса в S1: " + q11);
-        StatsGraphBuild.updateCell(1, cellNum, L01);
-        StatsGraphBuild.updateCell(2, cellNum, q11);
         s += q11;
         for (int n = 0; n < Q_CNT; n++) {
             q12 += (n + 1) * p2[n];
         }
-        writer.write("\nМО числа требований 2 класса в S1: " + q12);
-        StatsGraphBuild.updateCell(3, cellNum, q12);
         s += p;
         return s;
     }
@@ -92,21 +87,7 @@ public class AModel {
         q22 = p * L02 / (L0 + L02);
         q23 = p * L0 / (L0 + L02);
 
-        writer.write(
-                "\nМО числа требований 2 класса в S2: " + q22 +
-                "\nМО числа требований 3 класса в S2: " + q23);
-
-        StatsGraphBuild.updateCell(4, cellNum, q22);
-        StatsGraphBuild.updateCell(5, cellNum, q23);
         s = s + p;
-        writer.write(
-                "\nМО числа требований в сети: " + s +
-                "\nВремя реакции сети: " + s / L0 +
-                "\nВероятность, что узел пуст: " + s01 * s02 +
-                "\nМО числа потерянных пакетов: " + L01 / BETTA
-
-        );
-        StatsGraphBuild.updateCell(6, cellNum, s);
         return s;
     }
 
@@ -115,16 +96,38 @@ public class AModel {
         u12 = q12 / L02;
         u22 = q22 / L0;
         u23 = q23 / L02;
+    }
+
+
+    private void writeOutput(int writeFlag) throws IOException {
         writer.write(
-                "\nМО длительности пребывания требований 1 класса в S1: " + u11 +
-                "\nМО длительности пребывания требований 2 класса в S1: " + u12 +
-                "\nМО длительности пребывания требований 2 класса в S2: " + u22 +
-                "\nМО длительности пребывания требований 3 класса в S2: " + u23 + "\n\n"
+                "L01: " + L01 +
+                        "\nМО числа требований 1 класса в S1: " + q11 +
+                        "\nМО числа требований 2 класса в S1: " + q12 +
+                        "\nМО числа требований 2 класса в S2: " + q22 +
+                        "\nМО числа требований 3 класса в S2: " + q23 +
+                        "\nМО числа требований в сети: " + s +
+                        "\nВремя реакции сети: " + s / L0 +
+                        "\nВероятность, что узел пуст: " + s01 * s02 +
+                        "\nМО числа потерянных пакетов: " + L01 / BETTA +
+                        "\nМО длительности пребывания требований 1 класса в S1: " + u11 +
+                        "\nМО длительности пребывания требований 2 класса в S1: " + u12 +
+                        "\nМО длительности пребывания требований 2 класса в S2: " + u22 +
+                        "\nМО длительности пребывания требований 3 класса в S2: " + u23 + "\n\n"
         );
-        StatsGraphBuild.updateCell(7, cellNum, u11);
-        StatsGraphBuild.updateCell(8, cellNum, u12);
-        StatsGraphBuild.updateCell(9, cellNum, u22);
-        StatsGraphBuild.updateCell(10, cellNum, u23);
+
+        StatsGraphBuild.updateCell(1 + writeFlag, cellNum, L01);
+        StatsGraphBuild.updateCell(2 + writeFlag, cellNum, q11);
+        StatsGraphBuild.updateCell(3 + writeFlag, cellNum, q12);
+        StatsGraphBuild.updateCell(4 + writeFlag, cellNum, q22);
+        StatsGraphBuild.updateCell(5 + writeFlag, cellNum, q23);
+        StatsGraphBuild.updateCell(6 + writeFlag, cellNum, s);
+        StatsGraphBuild.updateCell(7 + writeFlag, cellNum, u11);
+        StatsGraphBuild.updateCell(8 + writeFlag, cellNum, u12);
+        StatsGraphBuild.updateCell(9 + writeFlag, cellNum, u22);
+        StatsGraphBuild.updateCell(10 + writeFlag, cellNum, u23);
+
+        writer.flush();
     }
 
     public AModel(double l1, FileWriter writer, int cellNum) throws IOException {
@@ -134,6 +137,56 @@ public class AModel {
         calcS1Characteristics();
         calcS2Characteristics();
         calcS2S2TimeCharacteristics();
+        writeOutput(0);
+        binomReliability();
+        writeOutput(12);
         writer.flush();
     }
+
+    private double binomReliability() {
+        double p = BETTA / (ALPHA + BETTA);
+        double p1;
+        double qq11 = 0.0;
+        double qq12 = 0.0;
+        double qq22 = 0.0;
+        double qq23 = 0.0;
+        double uu11 = 0.0;
+        double uu12 = 0.0;
+        double uu22 = 0.0;
+        double uu23 = 0.0;
+        double ss = 0.0;
+
+
+        for (int i = 0; i < 1000; i++) {
+            p1 = calculateReliability(1000, i, p);
+            qq11 += q11 * p1;
+            qq12 += q12 * p1;
+            qq22 += q22 * p1;
+            qq23 += q23 * p1;
+            uu11 += u11 * p1;
+            uu12 += u12 * p1;
+            uu22 += u22 * p1;
+            uu23 += u23 * p1;
+            uu23 += u23 * p1;
+            ss += s * p1;
+        }
+
+        q11 = qq11;
+        q12 = qq12;
+        q22 = qq22;
+        q23 = qq23;
+        u11 = uu11;
+        u12 = uu12;
+        u22 = uu22;
+        u23 = uu23;
+        s = ss;
+        return 0;
+    }
+
+    private double calculateReliability(int n, int k, double p) {
+
+        return NS(n, k) * Math.pow(p, k) * Math.pow(1.0 - p, n - k);
+    }
+
+
 }
