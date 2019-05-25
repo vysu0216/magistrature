@@ -8,6 +8,7 @@ import java.util.*;
 
 public class IModel {
 
+    private final int eRowNum;
     private double L01 = 0.0;                           //интенсивность поступления требований 1 класса в S1
     private double L02 = 0.0;                           //интенсивность поступления требований 2 класса в S2
     private static final double MU11 = 1.0 / 200000;    //интенсивность обработки требований 1 класса в S1
@@ -190,15 +191,15 @@ public class IModel {
                 "МО длительности пребывания требований 3 класса в S2: " + MS23 + "\n\n");
 
         StatsGraphBuild.updateCell(13, cellNum, L01);
-        StatsGraphBuild.updateCell(14, cellNum, S11Cnt);
-        StatsGraphBuild.updateCell(15, cellNum, S12Cnt);
-        StatsGraphBuild.updateCell(16, cellNum, S22Cnt);
-        StatsGraphBuild.updateCell(17, cellNum, S23Cnt);
-        StatsGraphBuild.updateCell(18, cellNum, (S11Cnt + S22Cnt + S12Cnt + S23Cnt));
-        StatsGraphBuild.updateCell(19, cellNum, MS11);
-        StatsGraphBuild.updateCell(20, cellNum, MS12);
-        StatsGraphBuild.updateCell(21, cellNum, MS22);
-        StatsGraphBuild.updateCell(22, cellNum, MS23);
+        StatsGraphBuild.updateCell(eRowNum + 14, cellNum, S11Cnt);
+        StatsGraphBuild.updateCell(25, cellNum, S12Cnt);
+        StatsGraphBuild.updateCell(26, cellNum, S22Cnt);
+        StatsGraphBuild.updateCell(27, cellNum, S23Cnt);
+        StatsGraphBuild.updateCell(28, cellNum, (S11Cnt + S22Cnt + S12Cnt + S23Cnt));
+        StatsGraphBuild.updateCell(eRowNum + 29, cellNum, MS11);
+        StatsGraphBuild.updateCell(40, cellNum, MS12);
+        StatsGraphBuild.updateCell(41, cellNum, MS22);
+        StatsGraphBuild.updateCell(42, cellNum, MS23);
     }
 
     private int getQueueCount(List<Requirement> queue, int classNum){
@@ -302,9 +303,10 @@ public class IModel {
         return -(Math.log(random.nextDouble()) / lambda);
     }
 
-    public IModel(double l1, FileWriter writer, int cellNum) throws IOException {
+    public IModel(double l1, FileWriter writer, int cellNum, int eRowNum) throws IOException {
         this.writer = writer;
         this.cellNum = cellNum;
+        this.eRowNum = eRowNum;
         setL0(l1);
         emulate();
     }
