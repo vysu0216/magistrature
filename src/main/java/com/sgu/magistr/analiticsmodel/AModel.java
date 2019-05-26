@@ -14,7 +14,7 @@ public class AModel {
     private static final double MU2 = 25000.0;      //интенсивность обслуживания требований классов 1 и 2 в системе S2
     private static final double ALPHA = 0.5;        //параметр экспон ф-ции распред-я длит восстановления узла
     private static final double BETTA = 1000.0;     //параметр экспон ф-ции распред-я длит восстановления узла
-    private static final int Q_CNT = 20;            //интенсивность обслуживания требований классов 1 и 2 в системе S2
+    private static final int Q_CNT = 40;            //интенсивность обслуживания требований классов 1 и 2 в системе S2
 
     private static FileWriter writer = null;
 

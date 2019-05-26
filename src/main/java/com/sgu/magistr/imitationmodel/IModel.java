@@ -8,32 +8,48 @@ import java.util.*;
 
 public class IModel {
 
-    private double L01 = 0.0;                           //интенсивность поступления требований 1 класса в S1
-    private double L02 = 0.0;                           //интенсивность поступления требований 2 класса в S2
-    private static final double MU11 = 1.0 / 200000;    //интенсивность обработки требований 1 класса в S1
-    private static final double MU12 = 1.0 / 400000;    //интенсивность обработки требований 2 класса в S1
-    private static final double MU23 = 1.0 / 25000;     //интенсивность обработки требований S2
-    private double tMod = 0.0;                          //модельное время
+    private final int eRowNum;
+    //интенсивность поступления требований 1 класса в S1
+    private double L01 = 0.0;
+    //интенсивность поступления требований 2 класса в S2
+    private double L02 = 0.0;
+    //интенсивность обработки требований 1 класса в S1
+    private static final double MU11 = 1.0 / 200000;
+    //интенсивность обработки требований 2 класса в S1
+    private static final double MU12 = 1.0 / 400000;
+    //интенсивность обработки требований S2
+    private static final double MU23 = 1.0 / 25000;
+    //модельное время
+    private double tMod = 0.0;
 
     // очередь требований в систему S1:
     private List<Requirement> S1Queue = Collections.synchronizedList(new ArrayList<Requirement>());
     // очередь требований в систему S2:
     private List<Requirement> S2Queue = Collections.synchronizedList(new ArrayList<Requirement>());
-    private Set<Event> EventsList = new HashSet<Event>();                  //список генерируемых событий
-    private Map<Integer, Double> S11KMap = new HashMap<Integer, Double>(); //ассоц. массив для сумм k эл-тов 1 класса в очереди S1
-    private Map<Integer, Double> S12KMap = new HashMap<Integer, Double>(); //ассоц. массив для сумм k эл-тов 2 класса в очереди S1
-    private Map<Integer, Double> S22KMap = new HashMap<Integer, Double>(); //ассоц. массив для сумм k эл-тов 2 класса в очереди S2
-    private Map<Integer, Double> S23KMap = new HashMap<Integer, Double>(); //ассоц. массив для сумм k эл-тов 3 класса в очереди S2
+    //список генерируемых событий
+    private Set<Event> EventsList = new HashSet<Event>();
+    //ассоц. массив для сумм k эл-тов 1 класса в очереди S1
+    private Map<Integer, Double> S11KMap = new HashMap<Integer, Double>();
+    //ассоц. массив для сумм k эл-тов 2 класса в очереди S1
+    private Map<Integer, Double> S12KMap = new HashMap<Integer, Double>();
+    //ассоц. массив для сумм k эл-тов 2 класса в очереди S2
+    private Map<Integer, Double> S22KMap = new HashMap<Integer, Double>();
+    //ассоц. массив для сумм k эл-тов 3 класса в очереди S2
+    private Map<Integer, Double> S23KMap = new HashMap<Integer, Double>();
     private Random random = new Random();
 
-    private double currTime = 0;        //Значение текущего момента времени
-    private double S1prevTime = 0.0;    //Значение предыдущего момента времени для S1
-    private double S2prevTime = 0.0;    //Значение предыдущего момента времени для S2
-    private boolean isBusyS1 = false;   //Флаг занятости микропроцессора
-    private boolean isBusyS2 = false;   //Флаг занятости приемопередатчика
+    //Значение текущего момента времени
+    private double currTime = 0;
+    //Значение предыдущего момента времени для S1
+    private double S1prevTime = 0.0;
+    //Значение предыдущего момента времени для S2
+    private double S2prevTime = 0.0;
+    //Флаг занятости микропроцессора
+    private boolean isBusyS1 = false;
+    //Флаг занятости приемопередатчика
+    private boolean isBusyS2 = false;
 
     private static FileWriter writer = null;
-
     private int cellNum;
 
     private void setL0(double l1) {
@@ -52,18 +68,18 @@ public class IModel {
         EventsList.add(new Event(currTime, EventTypesEnum.SEND_TO_MP_CLASS_1));
         EventsList.add(new Event(currTime, EventTypesEnum.SEND_TO_PP_CLASS_2));
 
-        double TS11 = 0.0;      //Сумма длительностей пребывания требований 1 класса в S1
-        double TS12 = 0.0;      //Сумма длительностей пребывания требований 2 класса в S1
-        double TS22 = 0.0;      //Сумма длительностей пребывания всех требований в S2
-        double TS23 = 0.0;      //Сумма длительностей пребывания всех требований в S2
-        int NS11 = 1;           //Сумма требований 1 класса поступающих в S1
-        int NS12 = 1;           //Сумма требований 2 класса поступающих в S1
-        int NS22 = 1;           //Сумма требований 2 класса поступающих в S2
-        int NS23 = 1;           //Сумма требований 3 класса поступающих в S2
-        double MS11;            //МО времени пребывания требований 1 класса в S1
-        double MS12;            //МО времени пребывания требований 2 класса в S1
-        double MS22;            //МО времени пребывания требований 2 класса в S2
-        double MS23;            //МО времени пребывания требований 3 класса в S2
+        double TS11 = 0.0; //Сумма длительностей пребывания требований 1 класса в S1
+        double TS12 = 0.0; //Сумма длительностей пребывания требований 2 класса в S1
+        double TS22 = 0.0; //Сумма длительностей пребывания всех требований в S2
+        double TS23 = 0.0; //Сумма длительностей пребывания всех требований в S2
+        int NS11 = 1;      //Сумма требований 1 класса поступающих в S1
+        int NS12 = 1;      //Сумма требований 2 класса поступающих в S1
+        int NS22 = 1;      //Сумма требований 2 класса поступающих в S2
+        int NS23 = 1;      //Сумма требований 3 класса поступающих в S2
+        double MS11;       //МО времени пребывания требований 1 класса в S1
+        double MS12;       //МО времени пребывания требований 2 класса в S1
+        double MS22;       //МО времени пребывания требований 2 класса в S2
+        double MS23;       //МО времени пребывания требований 3 класса в S2
 
         while (currTime < tMod) {
             Event currEvent = getMinTimeEvent(EventsList);
@@ -190,15 +206,15 @@ public class IModel {
                 "МО длительности пребывания требований 3 класса в S2: " + MS23 + "\n\n");
 
         StatsGraphBuild.updateCell(13, cellNum, L01);
-        StatsGraphBuild.updateCell(14, cellNum, S11Cnt);
-        StatsGraphBuild.updateCell(15, cellNum, S12Cnt);
-        StatsGraphBuild.updateCell(16, cellNum, S22Cnt);
-        StatsGraphBuild.updateCell(17, cellNum, S23Cnt);
-        StatsGraphBuild.updateCell(18, cellNum, (S11Cnt + S22Cnt + S12Cnt + S23Cnt));
-        StatsGraphBuild.updateCell(19, cellNum, MS11);
-        StatsGraphBuild.updateCell(20, cellNum, MS12);
-        StatsGraphBuild.updateCell(21, cellNum, MS22);
-        StatsGraphBuild.updateCell(22, cellNum, MS23);
+        StatsGraphBuild.updateCell(eRowNum + 14, cellNum, S11Cnt);
+        StatsGraphBuild.updateCell(25, cellNum, S12Cnt);
+        StatsGraphBuild.updateCell(26, cellNum, S22Cnt);
+        StatsGraphBuild.updateCell(27, cellNum, S23Cnt);
+        StatsGraphBuild.updateCell(28, cellNum, (S11Cnt + S22Cnt + S12Cnt + S23Cnt));
+        StatsGraphBuild.updateCell(eRowNum + 29, cellNum, MS11);
+        StatsGraphBuild.updateCell(40, cellNum, MS12);
+        StatsGraphBuild.updateCell(41, cellNum, MS22);
+        StatsGraphBuild.updateCell(42, cellNum, MS23);
     }
 
     private int getQueueCount(List<Requirement> queue, int classNum){
@@ -302,9 +318,10 @@ public class IModel {
         return -(Math.log(random.nextDouble()) / lambda);
     }
 
-    public IModel(double l1, FileWriter writer, int cellNum) throws IOException {
+    public IModel(double l1, FileWriter writer, int cellNum, int eRowNum) throws IOException {
         this.writer = writer;
         this.cellNum = cellNum;
+        this.eRowNum = eRowNum;
         setL0(l1);
         emulate();
     }

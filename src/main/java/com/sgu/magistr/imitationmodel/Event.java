@@ -21,24 +21,8 @@ public class Event {
         return time;
     }
 
-    public void setTime(double time) {
-        this.time = time;
-    }
-
-    public double getGenTime() {
-        return genTime;
-    }
-
-    public void setGenTime(double genTime) {
-        this.genTime = genTime;
-    }
-
     public EventTypesEnum getEventType() {
         return eventType;
-    }
-
-    public void setEventType(EventTypesEnum eventType) {
-        this.eventType = eventType;
     }
 
 }

@@ -16,10 +16,11 @@ public class InitExperiment {
         for (int i = 0; i < l1Array.length; i++) {
             new AModel(l1Array[i], writer, i + 1);
         }
-        /*writer.write("Данные имитационной модели: \n");
-        for (int i = 0; i < l1Array.length; i++) {
-            new IModel(l1Array[i], writer, i + 1);
-        }*/
+        writer.write("Данные имитационной модели: \n");
+        for (int i = 0; i < 10; i++)
+            for (int j = 0; j < l1Array.length; j++) {
+                new IModel(l1Array[j], writer, j + 1, i);
+            }
         writer.close();
     }
 }
