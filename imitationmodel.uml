@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>com.sgu.magistr.imitationmodel</OriginalElement>
+  <nodes>
+    <node x="0.0" y="311.0">com.sgu.magistr.imitationmodel.Event</node>
+    <node x="110.27500000000006" y="677.0">com.sgu.magistr.imitationmodel.IModel</node>
+    <node x="114.275" y="0.0">com.sgu.magistr.imitationmodel.EventTypesEnum</node>
+    <node x="283.0" y="210.37342908438063">com.sgu.magistr.imitationmodel.Requirement</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="com.sgu.magistr.imitationmodel.IModel" target="com.sgu.magistr.imitationmodel.Event">
+      <point x="-145.33333333333337" y="-345.5" />
+      <point x="128.4416666666667" y="657.0" />
+      <point x="32.75" y="657.0" />
+      <point x="-98.25" y="114.5" />
+    </edge>
+    <edge source="com.sgu.magistr.imitationmodel.IModel" target="com.sgu.magistr.imitationmodel.Requirement">
+      <point x="36.333333333333314" y="-345.5" />
+      <point x="310.10833333333335" y="657.0" />
+      <point x="312.75" y="657.0" />
+      <point x="-89.25" y="191.5" />
+    </edge>
+    <edge source="com.sgu.magistr.imitationmodel.Event" target="com.sgu.magistr.imitationmodel.EventTypesEnum">
+      <point x="65.5" y="-114.5" />
+      <point x="196.5" y="209.0" />
+      <point x="193.775" y="209.0" />
+      <point x="0.0" y="92.0" />
+    </edge>
+    <edge source="com.sgu.magistr.imitationmodel.IModel" target="com.sgu.magistr.imitationmodel.EventTypesEnum">
+      <point x="-5.6843418860808015E-14" y="-345.5" />
+      <point x="273.775" y="657.0" />
+      <point x="272.5" y="657.0" />
+      <point x="272.5" y="209.0" />
+      <point x="246.775" y="209.0" />
+      <point x="53.0" y="92.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="0.5925531914893617" x="458.5" y="450.0" />
+  <SelectedNodes>
+    <node>com.sgu.magistr.imitationmodel.Requirement</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Fields</Category>
+    <Category>Methods</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+
